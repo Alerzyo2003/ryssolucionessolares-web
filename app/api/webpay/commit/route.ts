@@ -20,7 +20,15 @@ async function commitTransaction(request: Request, token: string) {
     const response = await tx.commit(token)
 
     if (response.status === 'AUTHORIZED' && response.response_code === 0) {
-      return NextResponse.redirect(new URL(`/pago-realizado?payment_id=${response.buy_order}`, request.url))
+      const paymentUrl = new URL('/pago-realizado', request.url)
+      paymentUrl.searchParams.set('payment_id', response.buy_order)
+      paymentUrl.searchParams.set('amount', String(response.amount))
+      paymentUrl.searchParams.set('transaction_date', String(response.transaction_date || ''))
+      paymentUrl.searchParams.set('authorization_code', String(response.authorization_code || ''))
+      paymentUrl.searchParams.set('card_last4', String(response.card_detail?.card_number || ''))
+      paymentUrl.searchParams.set('payment_type_code', String(response.payment_type_code || ''))
+
+      return NextResponse.redirect(paymentUrl)
     }
 
     return NextResponse.redirect(new URL('/pago-rechazado', request.url))

@@ -9,7 +9,33 @@ import { useCartStore } from '@/store/cartStore'
 function PagoExitosoContenido() {
   const searchParams = useSearchParams()
   const paymentId = searchParams.get('payment_id')
+  const amount = Number(searchParams.get('amount'))
+  const transactionDate = searchParams.get('transaction_date')
+  const authorizationCode = searchParams.get('authorization_code')
+  const cardLast4 = searchParams.get('card_last4')
+  const paymentTypeCode = searchParams.get('payment_type_code')
   const clearCart = useCartStore((state) => state.clearCart)
+
+  const formattedAmount = amount
+    ? new Intl.NumberFormat('es-CL', {
+        style: 'currency',
+        currency: 'CLP',
+        maximumFractionDigits: 0,
+      }).format(amount)
+    : 'N/A'
+
+  const formattedDate = transactionDate
+    ? new Intl.DateTimeFormat('es-CL', {
+        dateStyle: 'short',
+        timeStyle: 'medium',
+      }).format(new Date(transactionDate))
+    : 'N/A'
+
+  const paymentType = {
+    VD: 'Débito',
+    VN: 'Crédito',
+    VP: 'Prepago',
+  }[paymentTypeCode || ''] || paymentTypeCode || 'N/A'
 
   // Apenas cargue esta página, vaciamos el carrito
   useEffect(() => {
@@ -40,6 +66,26 @@ function PagoExitosoContenido() {
         <div className="flex justify-between items-center pb-3">
           <span className="text-slate-600">N° de Comprobante (ID)</span>
           <span className="font-bold text-slate-800">{paymentId || 'N/A'}</span>
+        </div>
+        <div className="flex justify-between items-center border-b border-slate-200 py-3">
+          <span className="text-slate-600">Monto</span>
+          <span className="font-bold text-slate-800">{formattedAmount}</span>
+        </div>
+        <div className="flex justify-between items-center border-b border-slate-200 py-3 gap-4">
+          <span className="text-slate-600">Fecha y hora</span>
+          <span className="font-bold text-slate-800 text-right">{formattedDate}</span>
+        </div>
+        <div className="flex justify-between items-center border-b border-slate-200 py-3">
+          <span className="text-slate-600">Código de autorización</span>
+          <span className="font-bold text-slate-800">{authorizationCode || 'N/A'}</span>
+        </div>
+        <div className="flex justify-between items-center border-b border-slate-200 py-3">
+          <span className="text-slate-600">Tarjeta</span>
+          <span className="font-bold text-slate-800">**** **** **** {cardLast4 || 'N/A'}</span>
+        </div>
+        <div className="flex justify-between items-center pt-3">
+          <span className="text-slate-600">Tipo de pago</span>
+          <span className="font-bold text-slate-800">{paymentType}</span>
         </div>
         <p className="text-xs text-slate-500 mt-4 text-center">
           * Hemos enviado un correo con el recibo detallado a la cuenta asociada a tu pago.
