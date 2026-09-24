@@ -18,8 +18,8 @@ export async function GET() {
     )
 
     // Tus dos tokens listos para ser anulados
-    const TOKEN_PARCIAL = '01ab22f82d4319e2fc9256ba131c257b0ae3bdb179ba12e9a6ee879d0d8ec3c9'
-    const TOKEN_TOTAL = '01ab4bb98ae6761cd2e062e3793d23db0a93271b82156e8247333bedd380442f'
+    const TOKEN_PARCIAL = '01ab5cfdf49ee95eeece1aacb34d806d2485784da5ed817272d478e7b745779b'
+    const TOKEN_TOTAL = '01ab0e76d98a8ec4362a2431ed41eae0a2b82b5a3b52305ad81f6fbbfecd48a8'
 
     console.log('Procesando anulación parcial en Transbank...')
     const parcialResponse = await tx.refund(TOKEN_PARCIAL, 1)
