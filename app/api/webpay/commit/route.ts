@@ -45,9 +45,7 @@ export async function GET(request: Request) {
     return commitTransaction(request, token)
   }
 
-  const returnUrl = new URL('/cart', request.url)
-  returnUrl.searchParams.set('error', 'transaccion_cancelada')
-  return NextResponse.redirect(returnUrl)
+  return NextResponse.redirect(new URL('/pago-anulado', request.url))
 }
 
 export async function POST(request: Request) {
@@ -55,9 +53,7 @@ export async function POST(request: Request) {
   const token = formData.get('token_ws')
 
   if (!token) {
-    const returnUrl = new URL('/cart', request.url)
-    returnUrl.searchParams.set('error', 'transaccion_cancelada')
-    return NextResponse.redirect(returnUrl)
+    return NextResponse.redirect(new URL('/pago-anulado', request.url))
   }
 
   return commitTransaction(request, token.toString())
