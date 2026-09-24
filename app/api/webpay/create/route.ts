@@ -11,7 +11,6 @@ export async function POST(request: Request) {
   try {
     const { buyOrder, sessionId, amount } = await request.json()
 
-    // Inyectamos las credenciales de prueba nativas del SDK de Transbank
     const tx = new WebpayPlus.Transaction(
       new Options(
         IntegrationCommerceCodes.WEBPAY_PLUS,
@@ -24,6 +23,12 @@ export async function POST(request: Request) {
     const numericAmount = Math.round(Number(amount))
 
     const response = await tx.create(buyOrder, sessionId, numericAmount, returnUrl)
+
+    // 🔴 LOG GIGANTE PARA VER EN VERCEL RUNTIME LOGS:
+    console.log("==================================================")
+    console.log("👉 TOKEN GENERADO PARA AUTOCERTIFICACIÓN:")
+    console.log(response.token)
+    console.log("==================================================")
 
     return NextResponse.json({
       url: response.url,
