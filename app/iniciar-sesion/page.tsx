@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
@@ -8,7 +8,41 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [checkingSession, setCheckingSession] = useState(true)
   const router = useRouter()
+
+  useEffect(() => {
+    let active = true
+
+    const redirectAuthenticatedAdmin = async () => {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+      if (authError || !user) {
+        if (active) setCheckingSession(false)
+        return
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single()
+
+      if (!active) return
+
+      if (!profileError && profile?.is_admin === true) {
+        router.replace('/admin')
+      } else {
+        setCheckingSession(false)
+      }
+    }
+
+    void redirectAuthenticatedAdmin()
+
+    return () => {
+      active = false
+    }
+  }, [router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,6 +70,14 @@ export default function LoginPage() {
       setError('No tienes permisos de administrador.')
       await supabase.auth.signOut()
     }
+  }
+
+  if (checkingSession) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-corp-light p-6 text-sm font-medium text-corp-gray">
+        Verificando sesión...
+      </main>
+    )
   }
 
   return (
