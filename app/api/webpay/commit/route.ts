@@ -5,10 +5,10 @@ import { createSupabaseAdmin } from '@/lib/supabaseAdmin'
 async function updateOrderStatus(
   buyOrder: string,
   status: 'paid' | 'failed'
-) {
+): Promise<string | null> {
   try {
     const admin = createSupabaseAdmin()
-    const { error } = await admin
+    const { data, error } = await admin
       .from('orders')
       .update({
         status,
@@ -17,10 +17,14 @@ async function updateOrderStatus(
       })
       .eq('provider', 'webpay')
       .eq('provider_reference', buyOrder)
+      .select('id')
+      .maybeSingle()
 
     if (error) console.error('No se pudo actualizar la orden Webpay:', error)
+    return data?.id ?? null
   } catch (error) {
     console.error('No se pudo conectar con las órdenes Webpay:', error)
+    return null
   }
 }
 
@@ -38,8 +42,9 @@ async function commitTransaction(request: Request, token: string) {
     const response = await tx.commit(token)
 
     if (response.status === 'AUTHORIZED' && response.response_code === 0) {
-      await updateOrderStatus(String(response.buy_order), 'paid')
+      const orderId = await updateOrderStatus(String(response.buy_order), 'paid')
       const paymentUrl = new URL('/pago-realizado', request.url)
+      if (orderId) paymentUrl.searchParams.set('order_id', orderId)
       paymentUrl.searchParams.set('payment_id', response.buy_order)
       paymentUrl.searchParams.set('amount', String(response.amount))
       paymentUrl.searchParams.set('transaction_date', String(response.transaction_date || ''))

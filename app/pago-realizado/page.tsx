@@ -3,6 +3,8 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { Download } from 'lucide-react'
+import { jsPDF } from 'jspdf'
 import { useCartStore } from '@/store/cartStore'
 
 // Creamos un componente interno para poder usar useSearchParams dentro de Suspense (Requisito de Next.js)
@@ -14,6 +16,87 @@ type MercadoPagoDetails = {
   cardLast4: string | null
   paymentMethod: string | null
   status: 'paid'
+}
+
+type ReceiptItem = {
+  name: string
+  quantity: number
+  unit_price: number
+}
+
+type ReceiptData = {
+  orderId: string
+  createdAt: string
+  provider: string
+  reference: string
+  customerEmail: string
+  amount: number
+  currency: string
+  items: ReceiptItem[]
+  status: 'paid'
+}
+
+function downloadPurchaseReceipt(
+  receipt: ReceiptData,
+  authorizationCode: string | null,
+  paymentType: string
+) {
+  const document = new jsPDF()
+  const formatPrice = (value: number) =>
+    new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: receipt.currency,
+      maximumFractionDigits: 0,
+    }).format(value)
+
+  document.setFontSize(18)
+  document.setFont('helvetica', 'bold')
+  document.text('R&S Soluciones Solares', 20, 22)
+  document.setFontSize(13)
+  document.text('Comprobante de compra', 20, 32)
+  document.setFontSize(10)
+  document.setFont('helvetica', 'normal')
+  document.text(`Orden: ${receipt.orderId}`, 20, 44)
+  document.text(`Comprobante: ${receipt.reference}`, 20, 51)
+  document.text(`Fecha: ${new Date(receipt.createdAt).toLocaleString('es-CL')}`, 20, 58)
+  document.text(`Cliente: ${receipt.customerEmail}`, 20, 65)
+  document.text(`Medio de pago: ${receipt.provider === 'mercadopago' ? 'Mercado Pago' : 'Webpay'}`, 20, 72)
+  document.text(`Estado: PAGADO`, 20, 79)
+
+  if (authorizationCode) document.text(`Autorización: ${authorizationCode}`, 20, 86)
+  document.text(`Tipo de pago: ${paymentType}`, 20, authorizationCode ? 93 : 86)
+
+  let y = authorizationCode ? 107 : 100
+  document.setFont('helvetica', 'bold')
+  document.text('Producto', 20, y)
+  document.text('Cantidad', 135, y, { align: 'right' })
+  document.text('Subtotal', 190, y, { align: 'right' })
+  y += 8
+  document.setFont('helvetica', 'normal')
+
+  for (const item of receipt.items) {
+    const nameLines = document.splitTextToSize(item.name, 95) as string[]
+    if (y + nameLines.length * 6 > 270) {
+      document.addPage()
+      y = 20
+    }
+
+    document.text(nameLines, 20, y)
+    document.text(String(item.quantity), 135, y, { align: 'right' })
+    document.text(formatPrice(item.unit_price * item.quantity), 190, y, { align: 'right' })
+    y += Math.max(nameLines.length * 6, 7) + 2
+  }
+
+  if (y > 270) {
+    document.addPage()
+    y = 20
+  }
+
+  document.setFont('helvetica', 'bold')
+  document.line(20, y, 190, y)
+  document.text('Total pagado', 20, y + 9)
+  document.text(formatPrice(receipt.amount), 190, y + 9, { align: 'right' })
+  document.save(`comprobante-${receipt.orderId}.pdf`)
 }
 
 function PagoExitosoContenido() {
@@ -29,6 +112,9 @@ function PagoExitosoContenido() {
   const [mercadoPagoDetails, setMercadoPagoDetails] = useState<MercadoPagoDetails | null>(null)
   const [verificationError, setVerificationError] = useState('')
   const [verifying, setVerifying] = useState(Boolean(orderId && paymentId))
+  const [receipt, setReceipt] = useState<ReceiptData | null>(null)
+  const [receiptLoading, setReceiptLoading] = useState(false)
+  const [receiptError, setReceiptError] = useState('')
   const clearCart = useCartStore((state) => state.clearCart)
 
   useEffect(() => {
@@ -95,12 +181,46 @@ function PagoExitosoContenido() {
     ? paymentTypeLabels[paymentTypeCode] || paymentTypeCode
     : 'Pendiente de verificación'
 
+  const paymentIsConfirmed = isMercadoPago
+    ? mercadoPagoDetails?.status === 'paid'
+    : Boolean(paymentId && orderId)
+
   useEffect(() => {
-    const paymentIsConfirmed = isMercadoPago
+    if (!orderId || !paymentIsConfirmed) return
+
+    const controller = new AbortController()
+    const loadReceipt = async () => {
+      setReceiptLoading(true)
+      setReceiptError('')
+
+      try {
+        const query = new URLSearchParams({ order_id: orderId })
+        const response = await fetch(`/api/orders/receipt?${query}`, {
+          cache: 'no-store',
+          signal: controller.signal,
+        })
+        const result = await response.json()
+        if (!response.ok) throw new Error(result.error || 'No se pudo cargar el comprobante.')
+        setReceipt(result as ReceiptData)
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setReceiptError(error instanceof Error ? error.message : 'No se pudo cargar el comprobante.')
+        }
+      } finally {
+        if (!controller.signal.aborted) setReceiptLoading(false)
+      }
+    }
+
+    void loadReceipt()
+    return () => controller.abort()
+  }, [orderId, paymentIsConfirmed])
+
+  useEffect(() => {
+    const clearAfterConfirmedPayment = isMercadoPago
       ? mercadoPagoDetails?.status === 'paid'
       : Boolean(paymentId)
 
-    if (paymentIsConfirmed) clearCart()
+    if (clearAfterConfirmedPayment) clearCart()
   }, [clearCart, isMercadoPago, mercadoPagoDetails?.status, paymentId])
 
   return (
@@ -125,6 +245,11 @@ function PagoExitosoContenido() {
       {verificationError && (
         <p role="alert" className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-left text-sm text-amber-900">
           {verificationError} Revisa el estado de la operación en Mercado Pago antes de volver a pagar.
+        </p>
+      )}
+      {receiptError && (
+        <p role="alert" className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-left text-sm text-amber-900">
+          El pago está aprobado, pero no se pudo cargar el detalle del comprobante: {receiptError}
         </p>
       )}
 
@@ -164,6 +289,19 @@ function PagoExitosoContenido() {
           <p className="mt-4 text-center text-xs text-slate-500">Consultando los detalles confirmados de la transacción.</p>
         )}
       </div>
+
+      {receipt && paymentIsConfirmed && (
+        <button
+          type="button"
+          onClick={() => downloadPurchaseReceipt(receipt, authorizationCode ?? null, paymentType)}
+          className="mb-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-8 py-4 font-bold text-white shadow-md transition-colors hover:bg-emerald-800"
+        >
+          <Download size={18} /> Descargar comprobante PDF
+        </button>
+      )}
+      {receiptLoading && (
+        <p className="mb-4 text-sm text-slate-500">Preparando comprobante...</p>
+      )}
 
       <Link 
         href="/tienda" 
