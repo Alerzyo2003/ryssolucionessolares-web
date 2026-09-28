@@ -178,7 +178,7 @@ export default function NewProductPage() {
       alert('Error al crear el producto: ' + error.message)
     } else {
       alert('¡Producto creado y optimizado con éxito!')
-      router.push('/tienda')
+      router.push('/admin')
     }
   }
 

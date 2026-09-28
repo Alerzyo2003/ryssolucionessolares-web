@@ -1,11 +1,17 @@
 'use client'
 
 import { useState } from 'react'
+import type { CartItem } from '@/store/cartStore'
 
-export default function WebpayButton({ totalAmount }: { totalAmount: number }) {
+export default function WebpayButton({ items, customerEmail }: { items: CartItem[]; customerEmail: string }) {
   const [loading, setLoading] = useState(false)
 
   const handlePay = async () => {
+    if (!customerEmail.trim()) {
+      alert('Ingresa tu correo electrónico antes de continuar.')
+      return
+    }
+
     setLoading(true)
     const buyOrder = 'O-' + Math.floor(Math.random() * 1000000)
     const sessionId = 'S-' + Math.floor(Math.random() * 1000000)
@@ -17,7 +23,8 @@ export default function WebpayButton({ totalAmount }: { totalAmount: number }) {
         body: JSON.stringify({
           buyOrder,
           sessionId,
-          amount: totalAmount,
+          customerEmail,
+          items: items.map((item) => ({ id: item.id, quantity: item.quantity })),
         }),
       })
 

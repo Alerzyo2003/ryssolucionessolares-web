@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { WEB3FORMS_ACCESS_KEY } from '@/lib/web3forms'
 
 export default function ContactForm() {
   const [name, setName] = useState('')
@@ -13,28 +14,42 @@ export default function ContactForm() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
     setSuccess(false)
 
-    // Insertar el mensaje en la tabla contact_messages de Supabase
-    const { error } = await supabase.from('contact_messages').insert([
-      {
-        name,
-        phone,
-        email,
-        region,
-        subject,
-        message,
+    const formData = new FormData()
+    formData.append('access_key', WEB3FORMS_ACCESS_KEY)
+    formData.append('subject', 'NUEVA COTIZACIÓN - R&S Soluciones Solares')
+    formData.append('from_name', 'Contacto RyS')
+    formData.append('Nombre', name)
+    formData.append('Telefono', phone)
+    formData.append('Email', email)
+    formData.append('Region', region)
+    formData.append('Motivo de contacto', subject)
+    formData.append('Mensaje', message)
+
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+        body: formData,
+      })
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'No se pudo enviar el mensaje.')
       }
-    ])
 
-    setLoading(false)
+      const { error: storageError } = await supabase
+        .from('contact_messages')
+        .insert([{ name, phone, email, region, subject, message }])
 
-    if (error) {
-      alert('Error al enviar el mensaje: ' + error.message)
-    } else {
+      if (storageError) {
+        console.error('No se pudo guardar el mensaje en Supabase:', storageError)
+      }
+
       setSuccess(true)
       setName('')
       setPhone('')
@@ -42,6 +57,11 @@ export default function ContactForm() {
       setRegion('')
       setSubject('')
       setMessage('')
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error de conexión.'
+      alert('Error al enviar el mensaje: ' + errorMessage)
+    } finally {
+      setLoading(false)
     }
   }
 

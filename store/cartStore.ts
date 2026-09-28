@@ -2,9 +2,19 @@ import { create } from 'zustand'
 // 1. Importamos la herramienta 'persist' de Zustand
 import { persist } from 'zustand/middleware'
 
+export interface CartItem {
+  id: string | number
+  name: string
+  price: number
+  quantity: number
+}
+
+type NewCartItem = Omit<CartItem, 'quantity'>
+
 interface CartState {
-  items: any[];
-  addItem: (item: any) => void;
+  items: CartItem[]
+  addItem: (item: NewCartItem) => void
+  removeItem: (id: string | number) => void
   clearCart: () => void; 
 }
 
@@ -15,12 +25,16 @@ export const useCartStore = create<CartState>()(
       items: [],
       
       addItem: (newItem) => set((state) => {
-        const existing = state.items.find((i: any) => i.id === newItem.id);
+        const existing = state.items.find((item) => item.id === newItem.id)
         if (existing) {
-          return { items: state.items.map((i: any) => i.id === newItem.id ? { ...i, quantity: i.quantity + 1 } : i) };
+          return { items: state.items.map((item) => item.id === newItem.id ? { ...item, quantity: item.quantity + 1 } : item) }
         }
-        return { items: [...state.items, { ...newItem, quantity: 1 }] };
+        return { items: [...state.items, { ...newItem, quantity: 1 }] }
       }),
+
+      removeItem: (id) => set((state) => ({
+        items: state.items.filter((item) => item.id !== id),
+      })),
 
       clearCart: () => set({ items: [] }),
     }),

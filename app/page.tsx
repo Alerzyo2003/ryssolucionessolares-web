@@ -368,7 +368,7 @@ export default async function HomePage() {
           ) : (
             <div className="col-span-full py-16 text-center bg-white rounded-xl border border-slate-200">
               <p className="text-slate-500 font-medium">No hay productos publicados todavía.</p>
-              <Link href="/login" className="inline-block mt-4 text-orange-600 font-semibold hover:underline">
+              <Link href="/iniciar-sesion" className="inline-block mt-4 text-orange-600 font-semibold hover:underline">
                 Accede como administrador para crear productos →
               </Link>
             </div>

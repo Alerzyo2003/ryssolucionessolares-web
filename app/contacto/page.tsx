@@ -9,6 +9,7 @@ import {
   MapPin, 
   Send
 } from 'lucide-react'
+import { WEB3FORMS_ACCESS_KEY } from '@/lib/web3forms'
 
 // Íconos SVG personalizados
 const IconFacebook = ({ size = 20 }) => (
@@ -48,7 +49,7 @@ export default function ContactoPage() {
     const formData = new FormData(form)
     
     // Tu Access Key
-    formData.append("access_key", "4a500658-84ec-48ad-8a77-8c221c0c45e2") 
+    formData.append("access_key", WEB3FORMS_ACCESS_KEY)
     
     // AQUÍ CAMBIAMOS EL ASUNTO Y EL NOMBRE DEL REMITENTE
     formData.append("subject", "NUEVA COTIZACIÓN - R&S Soluciones Solares")

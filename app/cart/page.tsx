@@ -1,13 +1,18 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ShoppingCart, Package, CreditCard, ArrowRight } from 'lucide-react'
+// Agregamos Trash2 y ArrowLeft para los nuevos botones
+import { ShoppingCart, Package, CreditCard, ArrowRight, Trash2, ArrowLeft } from 'lucide-react'
 import { useCartStore } from '@/store/cartStore'
 import MercadoPagoButton from '@/components/MercadoPagoButton'
 import WebpayButton from '@/components/WebpayButton'
+import Link from 'next/link' // Asumiendo que usas Next.js para el botón de volver
 
 export default function CartPage() {
+  const [customerEmail, setCustomerEmail] = useState('')
   const items = useCartStore((state) => state.items)
+  const removeItem = useCartStore((state) => state.removeItem)
 
   const totalAmount = items.reduce(
     (acc, item) => acc + item.price * item.quantity,
@@ -97,10 +102,18 @@ export default function CartPage() {
               Tu carrito está vacío
             </h2>
 
-            <p className="mx-auto max-w-md text-sm leading-6 text-slate-500">
+            <p className="mx-auto mb-8 max-w-md text-sm leading-6 text-slate-500">
               Aún no has agregado productos. Cuando agregues una prestación o
               producto, aparecerá aquí.
             </p>
+
+            <Link
+              href="/tienda" // Cambia esto por tu ruta real de productos
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-slate-800"
+            >
+              <ArrowLeft size={16} />
+              Volver a la tienda
+            </Link>
           </motion.div>
 
         ) : (
@@ -140,8 +153,10 @@ export default function CartPage() {
 
                   <motion.div
                     key={item.id}
+                    layout // Permite animaciones suaves al eliminar elementos
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, x: -20 }} // Animación de salida
                     transition={{
                       duration: 0.4,
                       delay: 0.15 + index * 0.08,
@@ -179,11 +194,20 @@ export default function CartPage() {
                       </div>
                     </div>
 
-                    {/* Precio */}
-                    <div className="shrink-0 text-right">
+                    {/* Precio y Botón Eliminar */}
+                    <div className="flex items-center gap-4 shrink-0 text-right">
                       <p className="text-base font-black text-slate-900 sm:text-lg">
                         {formatPrice(item.price * item.quantity)}
                       </p>
+
+                      {/* Botón Eliminar */}
+                      <button
+                        onClick={() => removeItem(item.id)}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"
+                        aria-label="Eliminar producto"
+                      >
+                        <Trash2 size={18} />
+                      </button>
                     </div>
 
                   </motion.div>
@@ -256,6 +280,22 @@ export default function CartPage() {
                 </motion.p>
               </div>
 
+              <div className="mb-5">
+                <label htmlFor="checkout-email" className="mb-2 block text-sm font-bold text-slate-800">
+                  Correo para tu compra
+                </label>
+                <input
+                  id="checkout-email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={customerEmail}
+                  onChange={(event) => setCustomerEmail(event.target.value)}
+                  placeholder="tu@correo.com"
+                  className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/15"
+                />
+              </div>
+
               {/* MÉTODOS DE PAGO */}
               <div className="mb-4">
                 <p className="mb-3 text-sm font-bold text-slate-800">
@@ -268,14 +308,14 @@ export default function CartPage() {
                     whileHover={{ y: -2 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <MercadoPagoButton items={items} />
+                    <MercadoPagoButton items={items} customerEmail={customerEmail} />
                   </motion.div>
 
                   <motion.div
                     whileHover={{ y: -2 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <WebpayButton totalAmount={totalAmount} />
+                    <WebpayButton items={items} customerEmail={customerEmail} />
                   </motion.div>
 
                 </div>

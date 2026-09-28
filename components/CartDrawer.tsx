@@ -1,6 +1,7 @@
 'use client'
 
-import { useCartStore } from '@/store/cartStore'
+import { useState } from 'react'
+import { useCartStore, type CartItem } from '@/store/cartStore'
 import MercadoPagoButton from '@/components/MercadoPagoButton'
 import WebpayButton from '@/components/WebpayButton'
 
@@ -10,6 +11,7 @@ interface CartDrawerProps {
 }
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
+  const [customerEmail, setCustomerEmail] = useState('')
   const items = useCartStore((state) => state.items)
 
   // Si no está abierto, no renderizamos nada
@@ -46,7 +48,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             {items.length === 0 ? (
               <p className="text-center text-corp-gray mt-10">Tu carrito está vacío.</p>
             ) : (
-              items.map((item: any) => (
+              items.map((item: CartItem) => (
                 <div key={item.id} className="flex justify-between items-center border-b pb-4">
                   <div>
                     <h3 className="font-semibold text-corp-blue">{item.name}</h3>
@@ -71,8 +73,19 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               {/* Ambos métodos de pago disponibles en el panel lateral */}
               <div className="space-y-3">
                 {/* Le pasamos la lista de items en lugar de solo el total */}
-                <MercadoPagoButton items={items} />
-                <WebpayButton totalAmount={totalPrice} />
+                <label className="block text-sm font-semibold text-slate-700">
+                  Correo para tu compra
+                  <input
+                    type="email"
+                    autoComplete="email"
+                    value={customerEmail}
+                    onChange={(event) => setCustomerEmail(event.target.value)}
+                    placeholder="tu@correo.com"
+                    className="mt-2 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-orange-500"
+                  />
+                </label>
+                <MercadoPagoButton items={items} customerEmail={customerEmail} />
+                <WebpayButton items={items} customerEmail={customerEmail} />
               </div>
             </div>
           )}

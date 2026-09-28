@@ -21,7 +21,8 @@ export default function EditarProductoPage() {
     price: 0,
     stock: 0,
     image_url: '',
-    category: ''
+    category: '',
+    brand: '',
   })
 
   useEffect(() => {
@@ -41,7 +42,8 @@ export default function EditarProductoPage() {
           price: data.price || 0,
           stock: data.stock || 0,
           image_url: data.image_url || '',
-          category: data.category || ''
+          category: data.category || '',
+          brand: data.brand || ''
         })
       } else if (error) {
         alert('Error al cargar el producto: ' + error.message)
@@ -87,7 +89,8 @@ export default function EditarProductoPage() {
         price: formData.price,
         stock: formData.stock,
         image_url: finalImageUrl,
-        category: formData.category
+        category: formData.category,
+        brand: formData.brand
       })
       .eq('id', id)
 
@@ -162,7 +165,21 @@ export default function EditarProductoPage() {
               <option value="INVERSORES">INVERSORES</option>
               <option value="PANELES SOLARES">PANELES SOLARES</option>
               <option value="PERIFERICOS">PERIFERICOS</option>
+              {formData.category && !['BATERIAS', 'CABLES', 'EQUIPOS SOLARES', 'INVERSORES', 'PANELES SOLARES', 'PERIFERICOS'].includes(formData.category) && (
+                <option value={formData.category}>{formData.category}</option>
+              )}
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Marca</label>
+            <input
+              type="text"
+              name="brand"
+              value={formData.brand}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#0F172A] focus:outline-none"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">

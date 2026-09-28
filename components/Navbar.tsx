@@ -5,9 +5,15 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useCartStore } from '@/store/cartStore'
-import CartDrawer from '@/components/CartDrawer'
 import { supabase } from '@/lib/supabase'
-import { Menu, X, Search } from 'lucide-react'
+import {
+  Menu,
+  X,
+  Search,
+  ShoppingBag,
+  UserRound,
+  ChevronRight,
+} from 'lucide-react'
 
 const navLinks = [
   { href: '/', label: 'Inicio' },
@@ -25,15 +31,24 @@ interface SearchResult {
   image_url: string
 }
 
+const formatCLP = (value: number) =>
+  new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+    maximumFractionDigits: 0,
+  }).format(value)
+
 export default function Navbar() {
-  const [isCartOpen, setIsCartOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
-  
+
   const items = useCartStore((state) => state.items)
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0)
-  const totalPrice = items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
+  const totalPrice = items.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  )
 
   // Estados para el buscador en tiempo real
   const [searchTerm, setSearchTerm] = useState('')
@@ -52,27 +67,31 @@ export default function Navbar() {
   // Cerrar el dropdown del buscador si se hace clic afuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
         setShowResults(false)
       }
     }
+
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Buscar en Supabase mientras el usuario escribe (con un pequeño retraso/debounce de 300ms)
+  // Buscar en Supabase mientras el usuario escribe (debounce 300ms)
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
       if (searchTerm.trim().length >= 2) {
         setIsSearching(true)
         setShowResults(true)
-        
+
         const { data } = await supabase
           .from('products')
           .select('id, name, price, image_url')
           .ilike('name', `%${searchTerm.trim()}%`)
-          .limit(5) // Mostrar máximo 5 resultados rápidos
-          
+          .limit(5)
+
         setSearchResults(data || [])
         setIsSearching(false)
       } else {
@@ -84,9 +103,10 @@ export default function Navbar() {
     return () => clearTimeout(delayDebounceFn)
   }, [searchTerm])
 
-  // Manejar el submit por defecto (por si presiona Enter en vez de hacer clic)
+  // Manejar submit por defecto
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+
     if (searchTerm.trim()) {
       setShowResults(false)
       setIsMobileMenuOpen(false)
@@ -104,214 +124,318 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Top Banner with Subtle Slide-Down Entry */}
-      <div className="bg-[#0F172A] text-slate-300 text-[10px] md:text-xs py-2 px-5 md:px-8 flex justify-between items-center border-b border-slate-800 animate-fadeIn relative z-[60]">
-        <div className="flex items-center gap-2 overflow-hidden">
-          <span className="text-orange-400 font-medium inline-block animate-pulse truncate max-w-[200px] md:max-w-none">
-            🌱 Energía limpia hoy, un mejor mañana
-          </span>
-        </div>
-        <div className="flex items-center gap-4 shrink-0">
-          <Link href="/login" className="hover:text-white transition-colors font-medium">
-            Mi cuenta
+      {/* Barra superior */}
+      <div className="relative z-[60] overflow-hidden bg-[#08111f] text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_50%,rgba(249,115,22,0.14),transparent_28%),radial-gradient(circle_at_90%_50%,rgba(59,130,246,0.10),transparent_25%)]" />
+
+        <div className="relative mx-auto flex min-h-9 max-w-[1500px] items-center justify-between gap-3 px-4 py-1.5 sm:px-6 lg:px-8">
+          <div className="flex min-w-0 items-center gap-2 text-[10px] font-medium text-slate-300 sm:text-[11px]">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-orange-400 ring-1 ring-orange-400/20">
+              <span className="text-[10px]">✦</span>
+            </span>
+            <span className="truncate">
+              Energía limpia hoy, un mejor mañana
+            </span>
+          </div>
+
+          <Link
+            href="/iniciar-sesion"
+            className="group flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold text-slate-300 transition-colors hover:bg-white/5 hover:text-white sm:text-[11px]"
+          >
+            <UserRound className="h-3.5 w-3.5 text-orange-400 transition-transform duration-200 group-hover:scale-110" />
+            <span>Mi cuenta</span>
           </Link>
         </div>
       </div>
 
-      {/* Main Navbar */}
-      <nav className="bg-white/95 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-slate-100 transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-5 md:px-8 py-3 md:py-3.5 flex justify-between items-center">
-          
-          {/* Logo with Smooth Scaling */}
-          <Link href="/" className="flex items-center gap-3 group focus:outline-none shrink-0">
-            <div className="relative w-36 h-8 md:w-48 md:h-11 transition-transform duration-300 group-hover:scale-[1.03]">
-              <Image 
-                src="/header/imagen-cabezera-app.png" 
-                alt="Logo R&S Soluciones Solares" 
-                fill
-                className="object-contain object-left"
-                priority
-              />
+      {/* Navbar principal */}
+      <nav className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/85 shadow-[0_8px_30px_-20px_rgba(15,23,42,0.35)] backdrop-blur-2xl">
+        <div className="mx-auto max-w-[1500px] px-3 sm:px-5 lg:px-8">
+          <div className="flex min-h-[68px] items-center justify-between gap-3 lg:min-h-[78px]">
+            {/* Logo */}
+            <Link
+              href="/"
+              aria-label="Ir al inicio"
+              className="group flex shrink-0 items-center rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40"
+            >
+              <div className="relative h-9 w-36 transition-transform duration-300 group-hover:scale-[1.02] sm:h-10 sm:w-40 lg:h-11 lg:w-48">
+                <Image
+                  src="/header/imagen-cabezera-app.png"
+                  alt="Logo R&S Soluciones Solares"
+                  fill
+                  priority
+                  className="object-contain object-left"
+                />
+              </div>
+            </Link>
+
+            {/* Navegación escritorio */}
+            <div className="hidden xl:flex flex-1 items-center justify-center">
+              <div className="flex items-center gap-1 rounded-2xl border border-slate-200/70 bg-slate-50/70 p-1.5 shadow-inner">
+                {navLinks.map((link) => {
+                  const isActive = pathname === link.href
+
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`group relative flex items-center rounded-xl px-3.5 py-2.5 text-[13px] font-semibold transition-all duration-250 ${
+                        isActive
+                          ? 'bg-white text-orange-600 shadow-[0_4px_14px_-8px_rgba(15,23,42,0.30)] ring-1 ring-slate-200/80'
+                          : 'text-slate-600 hover:bg-white/80 hover:text-slate-950'
+                      }`}
+                    >
+                      <span>{link.label}</span>
+
+                      {isActive && (
+                        <span className="absolute bottom-1 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-orange-500" />
+                      )}
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
-          </Link>
 
-          {/* Desktop Navigation Links */}
-          <div className="hidden lg:flex items-center gap-1 xl:gap-2 font-medium text-sm">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`relative px-4 py-2 rounded-xl transition-all duration-300 group ${
-                    isActive 
-                      ? 'text-orange-600 font-semibold bg-orange-50/70 shadow-xs' 
-                      : 'text-slate-600 hover:text-orange-600 hover:bg-slate-50'
-                  }`}
+            {/* Acciones */}
+            <div
+              className="flex shrink-0 items-center gap-2 sm:gap-2.5"
+              ref={searchRef}
+            >
+              {/* Buscador escritorio */}
+              <div className="relative hidden lg:block">
+                <form
+                  onSubmit={handleSearchSubmit}
+                  className="group flex w-48 items-center rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 py-2.5 transition-all duration-300 focus-within:w-64 focus-within:border-orange-400 focus-within:bg-white focus-within:shadow-[0_8px_24px_-16px_rgba(249,115,22,0.45)] focus-within:ring-4 focus-within:ring-orange-500/10"
                 >
-                  <span>{link.label}</span>
-                  {!isActive && (
-                    <span className="absolute bottom-1.5 left-4 right-4 h-0.5 bg-orange-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-full" />
-                  )}
-                </Link>
-              )
-            })}
-          </div>
+                  <button
+                    type="submit"
+                    aria-label="Buscar"
+                    className="mr-2 shrink-0 text-slate-400 transition-colors hover:text-orange-500"
+                  >
+                    <Search className="h-4 w-4" strokeWidth={2.2} />
+                  </button>
 
-          {/* Search, Cart & Mobile Actions */}
-          <div className="flex items-center gap-3 md:gap-4" ref={searchRef}>
-            
-            {/* Buscador Interactivo Flotante (Desktop) */}
-            <div className="relative hidden lg:block">
-              <form 
-                onSubmit={handleSearchSubmit}
-                className="flex items-center bg-slate-50/80 rounded-full px-4 py-2 border border-slate-200/80 w-64 focus-within:w-80 focus-within:bg-white focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-500/10 transition-all duration-300 ease-out z-50 relative"
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onFocus={() => {
+                      if (searchTerm.trim().length >= 2) setShowResults(true)
+                    }}
+                    placeholder="Buscar equipos..."
+                    className="w-full bg-transparent text-[13px] font-medium text-slate-700 outline-none placeholder:text-slate-400"
+                    aria-label="Buscar equipos"
+                  />
+
+                  {isSearching && (
+                    <div className="ml-2 h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-orange-500 border-t-transparent" />
+                  )}
+                </form>
+
+                {/* Resultados escritorio */}
+                {showResults && !isMobileMenuOpen && (
+                  <div className="absolute left-0 right-0 top-[calc(100%+10px)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_60px_-24px_rgba(15,23,42,0.35)]">
+                    {searchResults.length > 0 ? (
+                      <div className="max-h-[350px] overflow-y-auto py-2">
+                        {searchResults.map((product) => (
+                          <button
+                            type="button"
+                            key={product.id}
+                            onClick={() => handleResultClick(product.id)}
+                            className="flex w-full items-center gap-3 border-b border-slate-100 px-3.5 py-3 text-left transition-colors last:border-0 hover:bg-slate-50"
+                          >
+                            <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-white">
+                              <Image
+                                src={
+                                  product.image_url ||
+                                  'https://images.unsplash.com/photo-1508873535684-277a3cbcc4e8?q=80&w=200&auto=format&fit=crop'
+                                }
+                                alt={product.name}
+                                fill
+                                className="object-contain p-1"
+                              />
+                            </div>
+
+                            <div className="min-w-0 flex-1">
+                              <h4 className="truncate text-[13px] font-bold text-slate-900">
+                                {product.name}
+                              </h4>
+                              <p className="mt-0.5 text-xs font-bold text-orange-600">
+                                {formatCLP(product.price)}
+                              </p>
+                            </div>
+
+                            <ChevronRight className="h-4 w-4 shrink-0 text-slate-300" />
+                          </button>
+                        ))}
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleSearchSubmit({
+                              preventDefault: () => {},
+                            } as React.FormEvent)
+                          }
+                          className="w-full bg-slate-50 px-4 py-3 text-center text-[11px] font-bold text-slate-500 transition-colors hover:bg-orange-50 hover:text-orange-600"
+                        >
+                          Ver todos los resultados
+                        </button>
+                      </div>
+                    ) : (
+                      !isSearching && (
+                        <div className="px-4 py-7 text-center">
+                          <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-slate-100">
+                            <Search className="h-4 w-4 text-slate-400" />
+                          </div>
+                          <p className="text-xs font-medium text-slate-500">
+                            No encontramos coincidencias para{' '}
+                            <span className="font-bold text-slate-800">
+                              "{searchTerm}"
+                            </span>
+                          </p>
+                        </div>
+                      )
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Carrito */}
+              <Link
+                href="/cart"
+                aria-label={`Abrir carrito. ${totalItems} productos`}
+                className="group relative flex h-10 items-center gap-2 rounded-xl bg-slate-950 px-3 text-white shadow-[0_8px_20px_-12px_rgba(15,23,42,0.65)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-900 hover:shadow-[0_14px_28px_-14px_rgba(15,23,42,0.6)] active:translate-y-0 sm:h-11 sm:px-4 lg:rounded-2xl"
               >
-                <button type="submit" className="text-slate-400 hover:text-orange-500 transition-colors mr-2.5 shrink-0">
-                  <Search className="w-4 h-4" />
-                </button>
-                <input 
-                  type="text" 
+                <span className="absolute inset-0 overflow-hidden rounded-xl bg-gradient-to-r from-orange-500/0 via-orange-500/15 to-orange-500/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 lg:rounded-2xl" />
+
+                <ShoppingBag className="relative h-4 w-4 text-orange-400 transition-transform duration-300 group-hover:scale-110 sm:h-[17px] sm:w-[17px]" />
+
+                <span className="relative hidden 2xl:flex items-center gap-2 text-xs font-semibold">
+                  <span>Carrito</span>
+                  <span className="h-3.5 w-px bg-white/10" />
+                  <span className="text-orange-300">{formatCLP(totalPrice)}</span>
+                </span>
+
+                <span className="relative flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-extrabold text-white shadow-sm">
+                  {totalItems}
+                </span>
+              </Link>
+
+              {/* Menú móvil/tablet */}
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-label={isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+                aria-expanded={isMobileMenuOpen}
+                className={`flex h-10 w-10 items-center justify-center rounded-xl border transition-all duration-300 lg:h-11 lg:w-11 lg:rounded-2xl ${
+                  isMobileMenuOpen
+                    ? 'border-orange-200 bg-orange-50 text-orange-600'
+                    : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                {isMobileMenuOpen ? (
+                  <X className="h-5 w-5" strokeWidth={2.4} />
+                ) : (
+                  <Menu className="h-5 w-5" strokeWidth={2.4} />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Menú móvil / tablet */}
+        <div
+          className={`overflow-hidden border-t border-slate-200/70 bg-white/95 backdrop-blur-xl transition-all duration-300 ease-out ${
+            isMobileMenuOpen
+              ? 'max-h-[85vh] opacity-100 shadow-[0_24px_50px_-30px_rgba(15,23,42,0.45)]'
+              : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className="mx-auto max-w-[1500px] px-4 pb-5 pt-4 sm:px-6 lg:px-8">
+            {/* Cuenta */}
+            <Link
+              href="/iniciar-sesion"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="mb-3 flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 transition-colors hover:bg-white hover:shadow-sm"
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-orange-400">
+                  <UserRound className="h-4 w-4" />
+                </span>
+
+                <div>
+                  <p className="text-sm font-bold text-slate-900">Mi cuenta</p>
+                  <p className="text-[11px] text-slate-500">
+                    Accede a tu cuenta
+                  </p>
+                </div>
+              </div>
+
+              <ChevronRight className="h-4 w-4 text-slate-400" />
+            </Link>
+
+            {/* Buscador móvil */}
+            <div className="relative mb-4">
+              <form
+                onSubmit={handleSearchSubmit}
+                className="flex items-center rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 transition-all focus-within:border-orange-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-orange-500/10"
+              >
+                <Search className="mr-3 h-5 w-5 shrink-0 text-slate-400" />
+
+                <input
+                  type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  onFocus={() => { if (searchTerm.trim().length >= 2) setShowResults(true) }}
-                  placeholder="Buscar equipos..." 
-                  className="bg-transparent text-sm outline-none w-full text-slate-700 placeholder-slate-400"
+                  placeholder="Buscar equipos solares..."
+                  className="w-full bg-transparent text-sm font-medium text-slate-700 outline-none placeholder:text-slate-400"
+                  aria-label="Buscar equipos"
                 />
-                
-                {/* Loader mientras busca */}
+
                 {isSearching && (
-                  <div className="absolute right-4 w-3.5 h-3.5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                  <div className="ml-2 h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-orange-500 border-t-transparent" />
                 )}
               </form>
 
-              {/* Menú Desplegable de Resultados (Desktop) */}
-              {showResults && !isMobileMenuOpen && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+              {/* Resultados móvil */}
+              {showResults && searchTerm.length >= 2 && (
+                <div className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
                   {searchResults.length > 0 ? (
-                    <div className="max-h-[350px] overflow-y-auto py-2">
+                    <div className="max-h-60 overflow-y-auto">
                       {searchResults.map((product) => (
-                        <div 
+                        <button
+                          type="button"
                           key={product.id}
                           onClick={() => handleResultClick(product.id)}
-                          className="flex items-center gap-4 px-4 py-3 hover:bg-slate-50 cursor-pointer border-b border-slate-50 last:border-0 transition-colors"
+                          className="flex w-full items-center gap-3 border-b border-slate-100 px-3.5 py-3 text-left last:border-0 hover:bg-slate-50"
                         >
-                          <div className="relative w-12 h-12 rounded-lg bg-white border border-slate-100 overflow-hidden shrink-0">
-                            <Image 
-                              src={product.image_url || 'https://images.unsplash.com/photo-1508873535684-277a3cbcc4e8?q=80&w=200&auto=format&fit=crop'}
+                          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-white">
+                            <Image
+                              src={product.image_url}
                               alt={product.name}
                               fill
                               className="object-contain p-1"
                             />
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-bold text-[#0F172A] truncate group-hover:text-orange-600">
+
+                          <div className="min-w-0 flex-1">
+                            <h4 className="truncate text-xs font-bold text-slate-900">
                               {product.name}
                             </h4>
-                            <p className="text-xs font-semibold text-orange-600 mt-0.5">
-                              {new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(product.price)}
+                            <p className="mt-0.5 text-[11px] font-bold text-orange-600">
+                              {formatCLP(product.price)}
                             </p>
                           </div>
-                        </div>
-                      ))}
-                      <div 
-                        onClick={() => handleSearchSubmit({ preventDefault: () => {} } as React.FormEvent)}
-                        className="w-full text-center px-4 py-3 bg-slate-50 text-xs font-bold text-slate-500 hover:text-orange-600 cursor-pointer transition-colors"
-                      >
-                        Ver todos los resultados
-                      </div>
-                    </div>
-                  ) : (
-                    !isSearching && (
-                      <div className="px-4 py-8 text-center">
-                        <p className="text-sm font-medium text-slate-500">No encontramos coincidencias para "<span className="text-[#0F172A] font-bold">{searchTerm}</span>".</p>
-                      </div>
-                    )
-                  )}
-                </div>
-              )}
-            </div>
 
-            {/* Cart Button (Responsive) */}
-            <button 
-              onClick={() => setIsCartOpen(true)}
-              className="relative group flex items-center gap-1.5 md:gap-2.5 bg-[#0F172A] hover:bg-slate-900 text-white px-3 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl text-xs md:text-sm font-semibold transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 cursor-pointer overflow-hidden shrink-0"
-            >
-              <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-orange-600/0 via-orange-600/20 to-orange-600/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              <svg className="w-4 h-4 md:w-4 md:h-4 text-orange-400 transition-transform duration-300 group-hover:scale-110 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4.4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
-              
-              <span className="relative flex items-center gap-1.5">
-                <span className="hidden md:inline">Carrito</span>
-                <span className="hidden md:inline text-slate-400">/</span>
-                <span className="text-orange-400 hidden sm:inline">
-                  {new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(totalPrice)}
-                </span>
-              </span>
-
-              <span className="relative bg-orange-500 text-white text-[10px] md:text-xs w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center font-bold shadow-xs transition-transform duration-300 group-hover:scale-105 shrink-0">
-                {totalItems}
-              </span>
-            </button>
-
-            {/* Mobile Menu Toggle Button */}
-            <button 
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-1.5 -mr-1.5 text-slate-600 hover:text-orange-600 transition-colors focus:outline-none shrink-0"
-            >
-              {isMobileMenuOpen ? <X size={26} strokeWidth={2.5} /> : <Menu size={26} strokeWidth={2.5} />}
-            </button>
-
-          </div>
-        </div>
-
-        {/* Mobile Dropdown Menu */}
-        <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out bg-white border-t border-slate-100 shadow-xl ${isMobileMenuOpen ? 'max-h-[80vh] opacity-100' : 'max-h-0 opacity-0'}`}>
-          <div className="p-5 flex flex-col gap-4">
-            
-            {/* Buscador Móvil */}
-            <div className="relative">
-              <form onSubmit={handleSearchSubmit} className="flex items-center bg-slate-50 rounded-xl px-4 py-3 border border-slate-200 focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20 transition-all">
-                <Search className="w-5 h-5 text-slate-400 mr-3 shrink-0" />
-                <input 
-                  type="text" 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Buscar equipos solares..." 
-                  className="bg-transparent text-sm outline-none w-full text-slate-700 placeholder-slate-400"
-                />
-                {isSearching && <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin shrink-0 ml-2" />}
-              </form>
-
-              {/* Resultados de Búsqueda Móvil */}
-              {showResults && searchTerm.length >= 2 && (
-                <div className="mt-2 bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden">
-                  {searchResults.length > 0 ? (
-                    <div className="max-h-60 overflow-y-auto">
-                      {searchResults.map((product) => (
-                        <div 
-                          key={product.id}
-                          onClick={() => handleResultClick(product.id)}
-                          className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 border-b border-slate-50 last:border-0"
-                        >
-                          <div className="relative w-10 h-10 rounded-md bg-white border border-slate-100 overflow-hidden shrink-0">
-                            <Image src={product.image_url} alt={product.name} fill className="object-contain p-1" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-xs font-bold text-[#0F172A] truncate">{product.name}</h4>
-                            <p className="text-[11px] font-semibold text-orange-600 mt-0.5">
-                              {new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(product.price)}
-                            </p>
-                          </div>
-                        </div>
+                          <ChevronRight className="h-4 w-4 shrink-0 text-slate-300" />
+                        </button>
                       ))}
                     </div>
                   ) : (
                     !isSearching && (
                       <div className="px-4 py-6 text-center">
-                        <p className="text-xs font-medium text-slate-500">No hay resultados para "{searchTerm}"</p>
+                        <p className="text-xs font-medium text-slate-500">
+                          No hay resultados para "{searchTerm}"
+                        </p>
                       </div>
                     )
                   )}
@@ -319,23 +443,38 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Enlaces de Navegación Móvil */}
-            <div className="flex flex-col gap-1 mt-2">
+            {/* Links */}
+            <div className="grid gap-1.5 sm:grid-cols-2">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href
+
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`px-4 py-3.5 rounded-xl font-bold text-sm transition-colors flex items-center justify-between ${
-                      isActive 
-                        ? 'bg-orange-50 text-orange-600 border border-orange-100' 
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-[#0F172A]'
+                    className={`group flex items-center justify-between rounded-2xl border px-4 py-3.5 text-sm font-bold transition-all duration-200 ${
+                      isActive
+                        ? 'border-orange-100 bg-orange-50 text-orange-600 shadow-sm'
+                        : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-950'
                     }`}
                   >
-                    {link.label}
-                    {isActive && <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />}
+                    <span className="flex items-center gap-3">
+                      <span
+                        className={`h-2 w-2 rounded-full transition-colors ${
+                          isActive
+                            ? 'bg-orange-500'
+                            : 'bg-slate-300 group-hover:bg-orange-400'
+                        }`}
+                      />
+                      {link.label}
+                    </span>
+
+                    <ChevronRight
+                      className={`h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 ${
+                        isActive ? 'text-orange-400' : 'text-slate-300'
+                      }`}
+                    />
                   </Link>
                 )
               })}
@@ -344,7 +483,6 @@ export default function Navbar() {
         </div>
       </nav>
 
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </>
   )
 }

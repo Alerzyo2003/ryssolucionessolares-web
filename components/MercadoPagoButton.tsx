@@ -1,12 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+import type { CartItem } from '@/store/cartStore'
 
 // Cambiamos totalAmount por items
-export default function MercadoPagoButton({ items }: { items: any[] }) {
+export default function MercadoPagoButton({ items, customerEmail }: { items: CartItem[]; customerEmail: string }) {
   const [loading, setLoading] = useState(false)
 
   const handlePay = async () => {
+    if (!customerEmail.trim()) {
+      alert('Ingresa tu correo electrónico antes de continuar.')
+      return
+    }
+
     setLoading(true)
     
     // Mapeamos los items reales del carrito
@@ -21,7 +27,7 @@ export default function MercadoPagoButton({ items }: { items: any[] }) {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: formattedItems }),
+        body: JSON.stringify({ items: formattedItems, customerEmail }),
       })
 
       const data = await res.json()
