@@ -114,14 +114,14 @@ function PagoExitosoContenido() {
   const webpayPaymentType = searchParams.get('payment_type_code')
   const [mercadoPagoDetails, setMercadoPagoDetails] = useState<MercadoPagoDetails | null>(null)
   const [verificationError, setVerificationError] = useState('')
-  const [verifying, setVerifying] = useState(Boolean(orderId && paymentId))
+  const [verifying, setVerifying] = useState(Boolean(isMercadoPago && orderId && paymentId))
   const [receipt, setReceipt] = useState<ReceiptData | null>(null)
   const [receiptLoading, setReceiptLoading] = useState(false)
   const [receiptError, setReceiptError] = useState('')
   const clearCart = useCartStore((state) => state.clearCart)
 
   useEffect(() => {
-    if (!orderId || !paymentId) return
+    if (!isMercadoPago || !orderId || !paymentId) return
 
     const controller = new AbortController()
     const verifyPayment = async () => {
@@ -149,7 +149,7 @@ function PagoExitosoContenido() {
 
     void verifyPayment()
     return () => controller.abort()
-  }, [orderId, paymentId])
+  }, [isMercadoPago, orderId, paymentId])
 
   const amount = isMercadoPago ? mercadoPagoDetails?.amount : webpayAmount
   const transactionDate = isMercadoPago ? mercadoPagoDetails?.transactionDate : webpayDate
