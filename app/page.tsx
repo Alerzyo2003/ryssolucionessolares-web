@@ -37,6 +37,8 @@ interface Product {
   category?: string
 }
 
+export const dynamic = 'force-dynamic'
+
 function SectionKicker({ label, dark = false }: { label: string; dark?: boolean }) {
   return (
     <div className={`flex items-center gap-2.5 mb-3 ${dark ? 'text-orange-400' : 'text-orange-600'}`}>

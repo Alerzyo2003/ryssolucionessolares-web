@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { MercadoPagoConfig, Payment } from 'mercadopago'
 import { createSupabaseAdmin } from '@/lib/supabaseAdmin'
+import { sendPaidOrderEmails } from '@/lib/purchaseNotifications'
 
 export async function GET(request: Request) {
   try {
@@ -55,6 +56,7 @@ export async function GET(request: Request) {
       .eq('id', order.id)
 
     if (updateError) throw updateError
+    await sendPaidOrderEmails(order.id)
 
     return NextResponse.json({
       paymentId: String(payment.id),

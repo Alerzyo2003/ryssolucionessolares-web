@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { MercadoPagoConfig, Payment } from 'mercadopago'
 import { createSupabaseAdmin } from '@/lib/supabaseAdmin'
+import { sendPaidOrderEmails } from '@/lib/purchaseNotifications'
 
 export async function POST(request: Request) {
   try {
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
       .eq('id', order.id)
 
     if (updateError) throw updateError
+    if (status === 'paid') await sendPaidOrderEmails(order.id)
     return NextResponse.json({ received: true })
   } catch (error) {
     console.error('Error al procesar webhook de Mercado Pago:', error)

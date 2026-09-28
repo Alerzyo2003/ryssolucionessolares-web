@@ -12,7 +12,9 @@ create table if not exists public.orders (
   currency text not null default 'CLP',
   items jsonb not null default '[]'::jsonb
     check (jsonb_typeof(items) = 'array'),
-  paid_at timestamptz
+  paid_at timestamptz,
+  notification_email_claimed_at timestamptz,
+  notification_email_sent_at timestamptz
 );
 
 alter table public.orders
@@ -47,6 +49,12 @@ alter table public.orders
 
 alter table public.orders
   add column if not exists paid_at timestamptz;
+
+alter table public.orders
+  add column if not exists notification_email_claimed_at timestamptz;
+
+alter table public.orders
+  add column if not exists notification_email_sent_at timestamptz;
 
 update public.orders
 set created_at = now()

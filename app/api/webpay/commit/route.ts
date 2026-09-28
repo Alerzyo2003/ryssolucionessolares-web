@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { WebpayPlus, Options, Environment } from 'transbank-sdk'
 import { createSupabaseAdmin } from '@/lib/supabaseAdmin'
+import { sendPaidOrderEmails } from '@/lib/purchaseNotifications'
 
 async function updateOrderStatus(
   buyOrder: string,
@@ -43,6 +44,7 @@ async function commitTransaction(request: Request, token: string) {
 
     if (response.status === 'AUTHORIZED' && response.response_code === 0) {
       const orderId = await updateOrderStatus(String(response.buy_order), 'paid')
+      if (orderId) await sendPaidOrderEmails(orderId)
       const paymentUrl = new URL('/pago-realizado', request.url)
       if (orderId) paymentUrl.searchParams.set('order_id', orderId)
       paymentUrl.searchParams.set('payment_id', response.buy_order)
