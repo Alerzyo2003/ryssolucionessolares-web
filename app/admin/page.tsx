@@ -47,6 +47,21 @@ const statusLabels: Record<Order['status'], string> = {
   unknown: 'Sin datos',
 }
 
+async function fetchAdminOverview(ordersOnly = false) {
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+  if (sessionError || !session) throw new Error('La sesión administrativa expiró. Inicia sesión otra vez.')
+
+  const endpoint = ordersOnly ? '/api/admin/overview?scope=orders' : '/api/admin/overview'
+  const response = await fetch(endpoint, {
+    headers: { Authorization: `Bearer ${session.access_token}` },
+    cache: 'no-store',
+  })
+  const result = await response.json()
+
+  if (!response.ok) throw new Error(result.error || 'No se pudieron cargar los datos del panel.')
+  return result as { products: Product[]; orders: Order[] }
+}
+
 export default function AdminDashboardPage() {
   const [view, setView] = useState<'products' | 'orders'>('products')
   const [products, setProducts] = useState<Product[]>([])
@@ -63,18 +78,21 @@ export default function AdminDashboardPage() {
 
     const loadDashboard = async () => {
       setLoading(true)
-      const [productResult, orderResult] = await Promise.all([
-        supabase.from('products').select('*').order('name'),
-        supabase.from('orders').select('*').order('created_at', { ascending: false }),
-      ])
-
-      if (!active) return
-
-      setProducts((productResult.data ?? []) as Product[])
-      setOrders((orderResult.data ?? []) as Order[])
-      setProductError(productResult.error?.message ?? '')
-      setOrderError(orderResult.error?.message ?? '')
-      setLoading(false)
+      try {
+        const result = await fetchAdminOverview()
+        if (!active) return
+        setProducts(result.products)
+        setOrders(result.orders)
+        setProductError('')
+        setOrderError('')
+      } catch (error) {
+        if (!active) return
+        const message = error instanceof Error ? error.message : 'Error desconocido.'
+        setProductError(message)
+        setOrderError(message)
+      } finally {
+        if (active) setLoading(false)
+      }
     }
 
     void loadDashboard()
@@ -83,6 +101,34 @@ export default function AdminDashboardPage() {
       active = false
     }
   }, [refreshKey])
+
+  useEffect(() => {
+    if (view !== 'orders') return
+
+    let active = true
+    const loadOrders = async () => {
+      try {
+        const result = await fetchAdminOverview(true)
+        if (!active) return
+        setOrders(result.orders)
+        setOrderError('')
+      } catch (error) {
+        if (!active) return
+        setOrderError(error instanceof Error ? error.message : 'No se pudieron cargar las compras.')
+      }
+    }
+
+    const refreshOrders = () => void loadOrders()
+    refreshOrders()
+    const intervalId = window.setInterval(refreshOrders, 15_000)
+    window.addEventListener('focus', refreshOrders)
+
+    return () => {
+      active = false
+      window.clearInterval(intervalId)
+      window.removeEventListener('focus', refreshOrders)
+    }
+  }, [view])
 
   const filteredProducts = useMemo(() => {
     const term = search.trim().toLocaleLowerCase('es-CL')

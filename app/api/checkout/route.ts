@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     const order = await createPendingOrder(admin, 'mercadopago', lines, String(customerEmail ?? ''))
     orderId = order.id
 
-    const configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin
+    const configuredAppUrl = process.env.APP_URL || new URL(request.url).origin
     const appUrl = new URL(configuredAppUrl)
     if (appUrl.protocol !== 'https:' && appUrl.protocol !== 'http:') {
       throw new Error('La URL pública de la aplicación no es válida.')
