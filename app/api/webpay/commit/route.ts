@@ -46,6 +46,7 @@ async function commitTransaction(request: Request, token: string) {
       const orderId = await updateOrderStatus(String(response.buy_order), 'paid')
       if (orderId) await sendPaidOrderEmails(orderId)
       const paymentUrl = new URL('/pago-realizado', request.url)
+      paymentUrl.searchParams.set('provider', 'webpay')
       if (orderId) paymentUrl.searchParams.set('order_id', orderId)
       paymentUrl.searchParams.set('payment_id', response.buy_order)
       paymentUrl.searchParams.set('amount', String(response.amount))

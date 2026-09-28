@@ -40,7 +40,7 @@ export async function POST(request: Request) {
         payer: { email: order.customerEmail },
         notification_url: `${appOrigin}/api/webhooks/mercadopago`,
         back_urls: {
-          success: `${appOrigin}/pago-realizado?order_id=${order.id}`,
+          success: `${appOrigin}/pago-realizado?provider=mercadopago&order_id=${order.id}`,
           failure: `${appOrigin}/tienda?status=failure`,
           pending: `${appOrigin}/tienda?status=pending`,
         },

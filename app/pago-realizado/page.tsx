@@ -103,7 +103,10 @@ function PagoExitosoContenido() {
   const searchParams = useSearchParams()
   const paymentId = searchParams.get('payment_id') || searchParams.get('collection_id')
   const orderId = searchParams.get('order_id') || searchParams.get('external_reference')
-  const isMercadoPago = Boolean(orderId)
+  const paymentProvider = searchParams.get('provider')
+  const isMercadoPago = paymentProvider
+    ? paymentProvider === 'mercadopago'
+    : Boolean(orderId && paymentId && !paymentId.startsWith('O-'))
   const webpayAmount = Number(searchParams.get('amount'))
   const webpayDate = searchParams.get('transaction_date')
   const webpayAuthorization = searchParams.get('authorization_code')
