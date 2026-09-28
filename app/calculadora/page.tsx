@@ -516,13 +516,16 @@ export default function CalculadoraPage() {
               </div>
             )}
 
-            <Link href="/contacto"
+            <a
+              href="https://wa.me/56991363439?text=Hola%2C%20quiero%20una%20cotizaci%C3%B3n%20para%20un%20sistema%20solar."
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center justify-between bg-orange-50 hover:bg-orange-100 border border-orange-100 rounded-2xl px-5 py-4 transition-colors mb-5">
               <span className="text-sm font-extrabold text-orange-600">Obtener cotización formal</span>
               <span className="flex items-center gap-1 text-xs font-bold text-orange-500 bg-white px-3 py-1.5 rounded-full shadow-sm">
                 Contactar asesor <ArrowRight className="w-3 h-3" />
               </span>
-            </Link>
+            </a>
 
             <div className="flex gap-2 items-start text-slate-400 mt-auto">
               <Info className="w-4 h-4 shrink-0 mt-0.5" />
