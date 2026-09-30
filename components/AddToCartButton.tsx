@@ -5,15 +5,15 @@ import { ShoppingCart, Check } from 'lucide-react'
 import { useCartStore } from '@/store/cartStore'
 import { flyToCart } from '@/lib/flyToCart'
 
-interface Product {
-  id: string
+// Solo los campos que necesita el carrito. Cualquier objeto Product con
+// más propiedades (description, stock, etc.) también es válido.
+interface CartProduct {
+  id: string | number
   name: string
   price: number
-  image_url: string
-  [key: string]: unknown
 }
 
-export default function AddToCartButton({ product }: { product: Product }) {
+export default function AddToCartButton({ product }: { product: CartProduct }) {
   const addItem = useCartStore((state) => state.addItem)
 
   const buttonRef = useRef<HTMLButtonElement>(null)
