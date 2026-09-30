@@ -11,6 +11,7 @@ const brands = [
   { name: 'Dyness', image: '/brands/dyness.png' },
   { name: 'Estarsolar', image: '/brands/estarsolar.png' },
   { name: 'Risen', image: '/brands/risen.png' },
+  { name: 'Ja-solar', image: '/brands/jasolar.png' },
   
 
 ]
