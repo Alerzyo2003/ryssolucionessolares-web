@@ -1,13 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
-// Agregamos Trash2 y ArrowLeft para los nuevos botones
+import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingCart, Package, CreditCard, ArrowRight, Trash2, ArrowLeft } from 'lucide-react'
 import { useCartStore } from '@/store/cartStore'
-import MercadoPagoButton from '@/components/MercadoPagoButton'
 import WebpayButton from '@/components/WebpayButton'
-import Link from 'next/link' // Asumiendo que usas Next.js para el botón de volver
+import Link from 'next/link'
 
 export default function CartPage() {
   const [customerEmail, setCustomerEmail] = useState('')
@@ -108,7 +106,7 @@ export default function CartPage() {
             </p>
 
             <Link
-              href="/tienda" // Cambia esto por tu ruta real de productos
+              href="/tienda"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-slate-800"
             >
               <ArrowLeft size={16} />
@@ -148,72 +146,72 @@ export default function CartPage() {
 
               {/* Lista */}
               <div className="space-y-3">
+                <AnimatePresence>
+                  {items.map((item: any, index: number) => (
 
-                {items.map((item: any, index: number) => (
+                    <motion.div
+                      key={item.id}
+                      layout
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{
+                        duration: 0.4,
+                        delay: 0.15 + index * 0.08,
+                      }}
+                      whileHover={{
+                        scale: 1.01,
+                        y: -2,
+                      }}
+                      className="group flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-4 transition-all hover:border-cyan-200 hover:bg-cyan-50/30 hover:shadow-md"
+                    >
 
-                  <motion.div
-                    key={item.id}
-                    layout // Permite animaciones suaves al eliminar elementos
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -20 }} // Animación de salida
-                    transition={{
-                      duration: 0.4,
-                      delay: 0.15 + index * 0.08,
-                    }}
-                    whileHover={{
-                      scale: 1.01,
-                      y: -2,
-                    }}
-                    className="group flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-4 transition-all hover:border-cyan-200 hover:bg-cyan-50/30 hover:shadow-md"
-                  >
+                      {/* Producto */}
+                      <div className="flex min-w-0 items-center gap-4">
 
-                    {/* Producto */}
-                    <div className="flex min-w-0 items-center gap-4">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-cyan-600 shadow-sm ring-1 ring-slate-100 transition-colors group-hover:bg-cyan-500 group-hover:text-white">
+                          <Package size={20} />
+                        </div>
 
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-cyan-600 shadow-sm ring-1 ring-slate-100 transition-colors group-hover:bg-cyan-500 group-hover:text-white">
-                        <Package size={20} />
-                      </div>
+                        <div className="min-w-0">
+                          <h3 className="truncate font-bold text-slate-800">
+                            {item.name}
+                          </h3>
 
-                      <div className="min-w-0">
-                        <h3 className="truncate font-bold text-slate-800">
-                          {item.name}
-                        </h3>
+                          <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
+                            <span>
+                              Cantidad: {item.quantity}
+                            </span>
 
-                        <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
-                          <span>
-                            Cantidad: {item.quantity}
-                          </span>
+                            <span className="h-1 w-1 rounded-full bg-slate-300" />
 
-                          <span className="h-1 w-1 rounded-full bg-slate-300" />
-
-                          <span>
-                            {formatPrice(item.price)} c/u
-                          </span>
+                            <span>
+                              {formatPrice(item.price)} c/u
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Precio y Botón Eliminar */}
-                    <div className="flex items-center gap-4 shrink-0 text-right">
-                      <p className="text-base font-black text-slate-900 sm:text-lg">
-                        {formatPrice(item.price * item.quantity)}
-                      </p>
+                      {/* Precio y Botón Eliminar */}
+                      <div className="flex items-center gap-4 shrink-0 text-right">
+                        <p className="text-base font-black text-slate-900 sm:text-lg">
+                          {formatPrice(item.price * item.quantity)}
+                        </p>
 
-                      {/* Botón Eliminar */}
-                      <button
-                        onClick={() => removeItem(item.id)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"
-                        aria-label="Eliminar producto"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
+                        {/* Botón Eliminar */}
+                        <button
+                          onClick={() => removeItem(item.id)}
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"
+                          aria-label="Eliminar producto"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
 
-                  </motion.div>
+                    </motion.div>
 
-                ))}
-
+                  ))}
+                </AnimatePresence>
               </div>
             </motion.section>
 
@@ -299,25 +297,16 @@ export default function CartPage() {
               {/* MÉTODOS DE PAGO */}
               <div className="mb-4">
                 <p className="mb-3 text-sm font-bold text-slate-800">
-                  Selecciona tu medio de pago
+                  Proceder al pago
                 </p>
 
                 <div className="space-y-3">
-
-                  <motion.div
-                    whileHover={{ y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <MercadoPagoButton items={items} customerEmail={customerEmail} />
-                  </motion.div>
-
                   <motion.div
                     whileHover={{ y: -2 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <WebpayButton items={items} customerEmail={customerEmail} />
                   </motion.div>
-
                 </div>
               </div>
 
