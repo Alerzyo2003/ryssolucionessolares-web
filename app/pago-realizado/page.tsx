@@ -53,6 +53,7 @@ function isNew(createdAt?: string) {
   return diff < NEW_DAYS * 24 * 60 * 60 * 1000
 }
 
+<<<<<<< HEAD
 function StockLabel({ stock }: { stock: number }) {
   if (stock <= 0) {
     return (
@@ -67,6 +68,88 @@ function StockLabel({ stock }: { stock: number }) {
         <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Últimas {stock} unidades
       </span>
     )
+=======
+function PagoExitosoContenido() {
+  const searchParams = useSearchParams()
+  const paymentId = searchParams.get('payment_id') || searchParams.get('collection_id')
+  const orderId = searchParams.get('order_id') || searchParams.get('external_reference')
+  const paymentProvider = searchParams.get('provider')
+  const isMercadoPago = paymentProvider
+    ? paymentProvider === 'mercadopago'
+    : Boolean(orderId && paymentId && !paymentId.startsWith('O-'))
+  const webpayAmount = Number(searchParams.get('amount'))
+  const webpayDate = searchParams.get('transaction_date')
+  const webpayAuthorization = searchParams.get('authorization_code')
+  const webpayCardLast4 = searchParams.get('card_last4')
+  const webpayPaymentType = searchParams.get('payment_type_code')
+  const [mercadoPagoDetails, setMercadoPagoDetails] = useState<MercadoPagoDetails | null>(null)
+  const [verificationError, setVerificationError] = useState('')
+  const [verifying, setVerifying] = useState(Boolean(isMercadoPago && orderId && paymentId))
+  const [receipt, setReceipt] = useState<ReceiptData | null>(null)
+  const [receiptLoading, setReceiptLoading] = useState(false)
+  const [receiptError, setReceiptError] = useState('')
+  const clearCart = useCartStore((state) => state.clearCart)
+
+  useEffect(() => {
+    if (!isMercadoPago || !orderId || !paymentId) return
+
+    const controller = new AbortController()
+    const verifyPayment = async () => {
+      setVerifying(true)
+      setVerificationError('')
+
+      try {
+        const query = new URLSearchParams({ payment_id: paymentId, order_id: orderId })
+        const response = await fetch(`/api/payments/mercadopago?${query}`, {
+          cache: 'no-store',
+          signal: controller.signal,
+        })
+        const result = await response.json()
+
+        if (!response.ok) throw new Error(result.error || 'No se pudo verificar el pago.')
+        setMercadoPagoDetails(result as MercadoPagoDetails)
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setVerificationError(error instanceof Error ? error.message : 'No se pudo verificar el pago.')
+        }
+      } finally {
+        if (!controller.signal.aborted) setVerifying(false)
+      }
+    }
+
+    void verifyPayment()
+    return () => controller.abort()
+  }, [isMercadoPago, orderId, paymentId])
+
+  const amount = isMercadoPago ? mercadoPagoDetails?.amount : webpayAmount
+  const transactionDate = isMercadoPago ? mercadoPagoDetails?.transactionDate : webpayDate
+  const authorizationCode = isMercadoPago ? mercadoPagoDetails?.authorizationCode : webpayAuthorization
+  const cardLast4 = isMercadoPago ? mercadoPagoDetails?.cardLast4 : webpayCardLast4
+  const paymentTypeCode = isMercadoPago ? mercadoPagoDetails?.paymentMethod : webpayPaymentType
+  const formattedAmount = amount
+    ? new Intl.NumberFormat('es-CL', {
+        style: 'currency',
+        currency: 'CLP',
+        maximumFractionDigits: 0,
+      }).format(amount)
+    : 'Pendiente de verificación'
+
+  const formattedDate = transactionDate
+    ? new Intl.DateTimeFormat('es-CL', {
+        dateStyle: 'short',
+        timeStyle: 'medium',
+      }).format(new Date(transactionDate))
+    : 'Pendiente de verificación'
+
+  const paymentTypeLabels: Record<string, string> = {
+    credit_card: 'Tarjeta de crédito',
+    debit_card: 'Tarjeta de débito',
+    account_money: 'Dinero en cuenta',
+    ticket: 'Efectivo',
+    VD: 'Débito',
+    VN: 'Crédito',
+    VP: 'Prepago',
+>>>>>>> 7023aed7d0107d88150978aede7df629bfdb1dff
   }
   return (
     <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600">

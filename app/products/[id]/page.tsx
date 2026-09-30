@@ -28,17 +28,17 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-corp-light py-12 px-6 md:px-16">
-        <div className="flex justify-between items-start">
-  <h1 className="text-3xl font-extrabold text-[#0F172A] mb-4">{product.name}</h1>
-  
-  {/* Botón de edición temporal (luego lo puedes ocultar para que solo lo vea el admin) */}
-  <Link 
-    href={`/admin/editar/${product.id}`}
-    className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1 text-xs font-bold rounded-lg transition-colors"
-  >
-    ✏️ Editar Producto
-  </Link>
-</div>
+      <div className="flex justify-between items-start">
+        <h1 className="text-3xl font-extrabold text-[#0F172A] mb-4">{product.name}</h1>
+        
+        {/* Botón de edición temporal (luego lo puedes ocultar para que solo lo vea el admin) */}
+        <Link 
+          href={`/admin/editar/${product.id}`}
+          className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1 text-xs font-bold rounded-lg transition-colors"
+        >
+          ✏️ Editar Producto
+        </Link>
+      </div>
       <div className="max-w-5xl mx-auto">
         
         {/* Botón de retorno */}
@@ -68,7 +68,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
               <h1 className="text-3xl font-bold text-corp-blue mt-4 mb-4">
                 {product.name}
               </h1>
-              <p className="text-corp-gray text-base leading-relaxed mb-6">
+              
+              {/* AQUÍ ESTÁ EL ARREGLO: Se agregó la clase whitespace-pre-wrap */}
+              <p className="text-corp-gray text-base leading-relaxed mb-6 whitespace-pre-wrap">
                 {product.description}
               </p>
 

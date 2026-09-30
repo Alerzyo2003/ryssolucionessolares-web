@@ -5,12 +5,11 @@ import Image from 'next/image'
 const brands = [
   { name: 'Growatt', image: '/brands/victron.png' },
   { name: 'Solis', image: '/brands/solis.png' },
-  { name: 'Browatt', image: '/brands/growatt.png' },
-  { name: 'Gruntek', image: '/brands/gruntek.png' },
   { name: 'Sako', image: '/brands/sako.png' },
   { name: 'Dyness', image: '/brands/dyness.png' },
   { name: 'Estarsolar', image: '/brands/estarsolar.png' },
   { name: 'Risen', image: '/brands/risen.png' },
+  { name: 'Ja-solar', image: '/brands/jasolar.png' },
   
 
 ]
