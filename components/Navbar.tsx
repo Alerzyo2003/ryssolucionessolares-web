@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useCartStore } from '@/store/cartStore'
 import { supabase } from '@/lib/supabase'
+import { CART_LANDED_EVENT } from '@/lib/flyToCart'
 import {
   Menu,
   X,
@@ -31,6 +32,9 @@ interface SearchResult {
   image_url: string
 }
 
+const FALLBACK_IMG =
+  'https://images.unsplash.com/photo-1508873535684-277a3cbcc4e8?q=80&w=200&auto=format&fit=crop'
+
 const formatCLP = (value: number) =>
   new Intl.NumberFormat('es-CL', {
     style: 'currency',
@@ -50,12 +54,16 @@ export default function Navbar() {
     0
   )
 
+  // Animación del carrito cuando aterriza un producto
+  const [cartBump, setCartBump] = useState(false)
+
   // Estados para el buscador en tiempo real
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
+  const mobileSearchRef = useRef<HTMLDivElement>(null)
 
   // Cerrar menú móvil al cambiar de ruta
   useEffect(() => {
@@ -64,13 +72,31 @@ export default function Navbar() {
     setSearchTerm('')
   }, [pathname])
 
-  // Cerrar el dropdown del buscador si se hace clic afuera
+  // Rebote del carrito cuando la imagen del producto llega (evento de flyToCart)
+  useEffect(() => {
+    let timer: number | undefined
+
+    const onLanded = () => {
+      setCartBump(true)
+      window.clearTimeout(timer)
+      timer = window.setTimeout(() => setCartBump(false), 500)
+    }
+
+    window.addEventListener(CART_LANDED_EVENT, onLanded)
+    return () => {
+      window.removeEventListener(CART_LANDED_EVENT, onLanded)
+      window.clearTimeout(timer)
+    }
+  }, [])
+
+  // Cerrar el dropdown del buscador si se hace clic afuera (escritorio y móvil)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        searchRef.current &&
-        !searchRef.current.contains(event.target as Node)
-      ) {
+      const target = event.target as Node
+      const insideDesktop = searchRef.current?.contains(target)
+      const insideMobile = mobileSearchRef.current?.contains(target)
+
+      if (!insideDesktop && !insideMobile) {
         setShowResults(false)
       }
     }
@@ -82,14 +108,16 @@ export default function Navbar() {
   // Buscar en Supabase mientras el usuario escribe (debounce 300ms)
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
-      if (searchTerm.trim().length >= 2) {
+      const term = searchTerm.trim().replace(/[%_,()]/g, ' ')
+
+      if (term.length >= 2) {
         setIsSearching(true)
         setShowResults(true)
 
         const { data } = await supabase
           .from('products')
           .select('id, name, price, image_url')
-          .ilike('name', `%${searchTerm.trim()}%`)
+          .ilike('name', `%${term}%`)
           .limit(5)
 
         setSearchResults(data || [])
@@ -103,15 +131,19 @@ export default function Navbar() {
     return () => clearTimeout(delayDebounceFn)
   }, [searchTerm])
 
-  // Manejar submit por defecto
+  // Ir a la tienda con el término de búsqueda
+  const goToSearch = () => {
+    const term = searchTerm.trim()
+    if (!term) return
+
+    setShowResults(false)
+    setIsMobileMenuOpen(false)
+    router.push(`/tienda?q=${encodeURIComponent(term)}`)
+  }
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (searchTerm.trim()) {
-      setShowResults(false)
-      setIsMobileMenuOpen(false)
-      router.push(`/tienda?q=${encodeURIComponent(searchTerm.trim())}`)
-    }
+    goToSearch()
   }
 
   // Al hacer clic en un producto del buscador
@@ -197,12 +229,9 @@ export default function Navbar() {
             </div>
 
             {/* Acciones */}
-            <div
-              className="flex shrink-0 items-center gap-2 sm:gap-2.5"
-              ref={searchRef}
-            >
+            <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
               {/* Buscador escritorio */}
-              <div className="relative hidden lg:block">
+              <div className="relative hidden lg:block" ref={searchRef}>
                 <form
                   onSubmit={handleSearchSubmit}
                   className="group flex w-48 items-center rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 py-2.5 transition-all duration-300 focus-within:w-64 focus-within:border-orange-400 focus-within:bg-white focus-within:shadow-[0_8px_24px_-16px_rgba(249,115,22,0.45)] focus-within:ring-4 focus-within:ring-orange-500/10"
@@ -246,12 +275,10 @@ export default function Navbar() {
                           >
                             <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-white">
                               <Image
-                                src={
-                                  product.image_url ||
-                                  'https://images.unsplash.com/photo-1508873535684-277a3cbcc4e8?q=80&w=200&auto=format&fit=crop'
-                                }
+                                src={product.image_url || FALLBACK_IMG}
                                 alt={product.name}
                                 fill
+                                sizes="44px"
                                 className="object-contain p-1"
                               />
                             </div>
@@ -271,11 +298,7 @@ export default function Navbar() {
 
                         <button
                           type="button"
-                          onClick={() =>
-                            handleSearchSubmit({
-                              preventDefault: () => {},
-                            } as React.FormEvent)
-                          }
+                          onClick={goToSearch}
                           className="w-full bg-slate-50 px-4 py-3 text-center text-[11px] font-bold text-slate-500 transition-colors hover:bg-orange-50 hover:text-orange-600"
                         >
                           Ver todos los resultados
@@ -290,7 +313,7 @@ export default function Navbar() {
                           <p className="text-xs font-medium text-slate-500">
                             No encontramos coincidencias para{' '}
                             <span className="font-bold text-slate-800">
-                              "{searchTerm}"
+                              &ldquo;{searchTerm}&rdquo;
                             </span>
                           </p>
                         </div>
@@ -300,11 +323,14 @@ export default function Navbar() {
                 )}
               </div>
 
-              {/* Carrito */}
+              {/* Carrito (destino de la animación de "añadir") */}
               <Link
                 href="/cart"
+                data-cart-target
                 aria-label={`Abrir carrito. ${totalItems} productos`}
-                className="group relative flex h-10 items-center gap-2 rounded-xl bg-slate-950 px-3 text-white shadow-[0_8px_20px_-12px_rgba(15,23,42,0.65)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-900 hover:shadow-[0_14px_28px_-14px_rgba(15,23,42,0.6)] active:translate-y-0 sm:h-11 sm:px-4 lg:rounded-2xl"
+                className={`group relative flex h-10 items-center gap-2 rounded-xl bg-slate-950 px-3 text-white shadow-[0_8px_20px_-12px_rgba(15,23,42,0.65)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-900 hover:shadow-[0_14px_28px_-14px_rgba(15,23,42,0.6)] active:translate-y-0 sm:h-11 sm:px-4 lg:rounded-2xl ${
+                  cartBump ? 'cart-bump' : ''
+                }`}
               >
                 <span className="absolute inset-0 overflow-hidden rounded-xl bg-gradient-to-r from-orange-500/0 via-orange-500/15 to-orange-500/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 lg:rounded-2xl" />
 
@@ -316,7 +342,11 @@ export default function Navbar() {
                   <span className="text-orange-300">{formatCLP(totalPrice)}</span>
                 </span>
 
-                <span className="relative flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-extrabold text-white shadow-sm">
+                <span
+                  className={`relative flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-extrabold text-white shadow-sm ${
+                    cartBump ? 'cart-pop' : ''
+                  }`}
+                >
                   {totalItems}
                 </span>
               </Link>
@@ -375,7 +405,7 @@ export default function Navbar() {
             </Link>
 
             {/* Buscador móvil */}
-            <div className="relative mb-4">
+            <div className="relative mb-4" ref={mobileSearchRef}>
               <form
                 onSubmit={handleSearchSubmit}
                 className="flex items-center rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 transition-all focus-within:border-orange-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-orange-500/10"
@@ -410,9 +440,10 @@ export default function Navbar() {
                         >
                           <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-white">
                             <Image
-                              src={product.image_url}
+                              src={product.image_url || FALLBACK_IMG}
                               alt={product.name}
                               fill
+                              sizes="40px"
                               className="object-contain p-1"
                             />
                           </div>
@@ -429,12 +460,20 @@ export default function Navbar() {
                           <ChevronRight className="h-4 w-4 shrink-0 text-slate-300" />
                         </button>
                       ))}
+
+                      <button
+                        type="button"
+                        onClick={goToSearch}
+                        className="w-full bg-slate-50 px-4 py-3 text-center text-[11px] font-bold text-slate-500 transition-colors hover:bg-orange-50 hover:text-orange-600"
+                      >
+                        Ver todos los resultados
+                      </button>
                     </div>
                   ) : (
                     !isSearching && (
                       <div className="px-4 py-6 text-center">
                         <p className="text-xs font-medium text-slate-500">
-                          No hay resultados para "{searchTerm}"
+                          No hay resultados para &ldquo;{searchTerm}&rdquo;
                         </p>
                       </div>
                     )
@@ -481,8 +520,30 @@ export default function Navbar() {
             </div>
           </div>
         </div>
-      </nav>
 
+        {/* Animaciones del carrito */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              @keyframes cart-bump {
+                0%, 100% { transform: translateY(0) scale(1); }
+                35% { transform: translateY(-2px) scale(1.12); }
+                70% { transform: translateY(0) scale(0.97); }
+              }
+              @keyframes cart-pop {
+                0% { transform: scale(1); }
+                40% { transform: scale(1.6); }
+                100% { transform: scale(1); }
+              }
+              .cart-bump { animation: cart-bump 0.45s ease-out; }
+              .cart-pop { animation: cart-pop 0.45s ease-out; }
+              @media (prefers-reduced-motion: reduce) {
+                .cart-bump, .cart-pop { animation: none; }
+              }
+            `,
+          }}
+        />
+      </nav>
     </>
   )
 }
