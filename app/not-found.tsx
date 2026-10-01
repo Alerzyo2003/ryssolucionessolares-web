@@ -50,7 +50,7 @@ export default function NotFound() {
         {/* Tarjetas de ayuda / accesos directos */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left max-w-2xl mx-auto pt-8 border-t border-slate-200">
           <Link 
-            href="/#servicios" 
+            href="/servicios" 
             className="p-4 bg-white rounded-xl border border-slate-200 hover:border-orange-300 hover:shadow-md transition-all duration-200 group flex items-start gap-3.5"
           >
             <div className="w-9 h-9 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-600 group-hover:text-white transition-colors">
@@ -67,7 +67,7 @@ export default function NotFound() {
           </Link>
 
           <a 
-            href="https://wa.me/56900000000" 
+            href="https://wa.me/56991363439" 
             target="_blank" 
             rel="noopener noreferrer"
             className="p-4 bg-white rounded-xl border border-slate-200 hover:border-emerald-400 hover:shadow-md transition-all duration-200 group flex items-start gap-3.5"
