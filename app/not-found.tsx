@@ -39,7 +39,7 @@ export default function NotFound() {
           </Link>
 
           <Link
-            href="/#tienda"
+            href="/tienda"
             className="w-full sm:w-auto bg-white border border-slate-200 hover:bg-slate-100 active:scale-[0.98] text-[#0F172A] px-7 py-3.5 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2"
           >
             <Search className="w-4 h-4 text-orange-600" />
