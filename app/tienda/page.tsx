@@ -357,8 +357,7 @@ export default async function TiendaPage({ searchParams }: Props) {
                           <Link href={`/products/${product.id}`} className="mt-1 block">
                             <h3 className="line-clamp-2 text-sm font-bold leading-snug text-[#0A2A4A] transition-colors group-hover:text-orange-600 sm:text-base">{product.name}</h3>
                           </Link>
-                          <p className="mt-1.5 hidden line-clamp-2 text-sm leading-relaxed text-slate-500 sm:block">{product.description}</p>
-                          <div className="mt-auto pt-2 sm:pt-3"><StockLabel stock={stock} /></div>
+<p className="mt-1.5 hidden text-sm leading-relaxed text-slate-500 sm:line-clamp-2">{product.description}</p>                          <div className="mt-auto pt-2 sm:pt-3"><StockLabel stock={stock} /></div>
                         </div>
 
                         <div className="space-y-2 border-t border-slate-100 bg-slate-50/70 p-3 sm:space-y-3 sm:p-4">
