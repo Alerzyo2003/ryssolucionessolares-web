@@ -318,8 +318,7 @@ export default async function TiendaPage({ searchParams }: Props) {
               </div>
             )}
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {filteredProducts.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">              {filteredProducts.length > 0 ? (
                 filteredProducts.map((product, index) => {
                   const stock = Number(product.stock ?? 0)
                   const outOfStock = stock <= 0
@@ -353,19 +352,19 @@ export default async function TiendaPage({ searchParams }: Props) {
                           )}
                         </Link>
 
-                        <div className="flex flex-1 flex-col p-4">
-                          <span className="text-xs font-semibold text-orange-600">{product.category || 'Equipo solar'}</span>
+                         <div className="flex flex-1 flex-col p-3 sm:p-4">
+                          <span className="truncate text-[11px] font-semibold text-orange-600 sm:text-xs">{product.category || 'Equipo solar'}</span>
                           <Link href={`/products/${product.id}`} className="mt-1 block">
-                            <h3 className="line-clamp-2 text-base font-bold leading-snug text-[#0A2A4A] transition-colors group-hover:text-orange-600">{product.name}</h3>
+                            <h3 className="line-clamp-2 text-sm font-bold leading-snug text-[#0A2A4A] transition-colors group-hover:text-orange-600 sm:text-base">{product.name}</h3>
                           </Link>
-                          <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-slate-500">{product.description}</p>
-                          <div className="mt-auto pt-3"><StockLabel stock={stock} /></div>
+                          <p className="mt-1.5 hidden line-clamp-2 text-sm leading-relaxed text-slate-500 sm:block">{product.description}</p>
+                          <div className="mt-auto pt-2 sm:pt-3"><StockLabel stock={stock} /></div>
                         </div>
 
-                        <div className="space-y-3 border-t border-slate-100 bg-slate-50/70 p-4">
-                          <div className="flex items-baseline justify-between">
-                            <span className={`${display.className} text-2xl font-extrabold tracking-tight text-[#0A2A4A]`}>{clp.format(product.price)}</span>
-                            <span className="text-xs text-slate-500">IVA incluido</span>
+                        <div className="space-y-2 border-t border-slate-100 bg-slate-50/70 p-3 sm:space-y-3 sm:p-4">
+                          <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between">
+                            <span className={`${display.className} text-lg font-extrabold tracking-tight text-[#0A2A4A] sm:text-2xl`}>{clp.format(product.price)}</span>
+                            <span className="text-[10px] text-slate-500 sm:text-xs">IVA incluido</span>
                           </div>
                           {outOfStock ? (
 <a
@@ -374,8 +373,7 @@ export default async function TiendaPage({ searchParams }: Props) {
   rel="noopener noreferrer"
   className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-600"
 >
-  <MessageCircle className="h-4 w-4" /> Consultar disponibilidad
-</a>                          ) : (
+  <MessageCircle className="h-4 w-4" /> <span className="sm:hidden">Consultar</span><span className="hidden sm:inline">Consultar disponibilidad</span></a>                          ) : (
                             <div className="w-full [&>button]:w-full"><AddToCartButton product={product} /></div>
                           )}
                         </div>
@@ -436,3 +434,4 @@ export default async function TiendaPage({ searchParams }: Props) {
     </div>
   )
 }
+  
