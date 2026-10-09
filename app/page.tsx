@@ -1,31 +1,42 @@
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
+import { Bricolage_Grotesque } from 'next/font/google'
 import AddToCartButton from '@/components/AddToCartButton'
 import ContactForm from '@/components/ContactForm'
 import BrandCarousel from '@/components/BrandCarousel'
-import BrandsAndFeatures from '@/components/BrandsAndFeatures'
 import ScrollReveal from '@/components/ScrollReveal'
 import AnimatedCounter from '@/components/AnimatedCounter'
+import SavingsCalculator from '@/components/SavingsCalculator'
+import EnergyFlow from '@/components/EnergyFlow'
+import { SunProgress, HeroSun, NightSky, DayClock } from '@/components/SunScroll'
 import {
-  Leaf,
-  TrendingUp,
-  Home as HomeIcon,
-  ShieldCheck,
-  Globe2,
-  Star,
-  Tag,
-  Lock,
-  MessageCircle,
-  ArrowRight,
-  Sun,
-  ClipboardCheck,
-  Wrench,
-  Gauge,
-  Award,
-  BadgeCheck,
-  Zap,
+  ArrowRight, MessageCircle, ClipboardCheck, Wrench, Gauge,
+  Globe2, Star, Tag, Lock, Award, BadgeCheck, Zap, ShieldCheck,
+  House, Building2, Factory, Plus, Check, CreditCard, CalendarCheck,
+  MapPin, Sun, TrendingDown, Phone, FileText,
 } from 'lucide-react'
+
+/* Las versiones nuevas de lucide-react ya no incluyen logos de marcas, así que van como SVG propios */
+function Facebook({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className={className}>
+      <path d="M14 8V6.5c0-.7.5-1 1-1h2V2h-3c-3 0-4 2-4 4.5V8H7.5v3.5H10V22h4V11.5h2.8L17.5 8H14z" />
+    </svg>
+  )
+}
+
+function Instagram({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden className={className}>
+      <rect x="2" y="2" width="20" height="20" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+const display = Bricolage_Grotesque({ subsets: ['latin'], weight: ['500', '700', '800'] })
 
 interface Product {
   id: string
@@ -39,14 +50,57 @@ interface Product {
 
 export const dynamic = 'force-dynamic'
 
-function SectionKicker({ label, dark = false }: { label: string; dark?: boolean }) {
-  return (
-    <div className={`flex items-center gap-2.5 mb-3 ${dark ? 'text-orange-400' : 'text-orange-600'}`}>
-      <Sun className="w-4 h-4" strokeWidth={2} />
-      <span className="text-sm font-semibold">{label}</span>
-    </div>
-  )
-}
+/* ================== DATOS DEL NEGOCIO ================== */
+const PHONE_DISPLAY = '+56 9 9136 3439'
+const PHONE_TEL = '+56991363439'
+const WHATSAPP_NUMBER = '56991363439'
+const FACEBOOK_URL = 'https://www.facebook.com/p/R-S-Soluciones-Solares-100065456444686/'
+const INSTAGRAM_URL = 'https://www.instagram.com/rys_solucionessolares/'
+
+const wa = (msg: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`
+const WHATSAPP_URL = wa('Hola, quiero cotizar un sistema solar')
+
+/*
+  PROYECTOS REALES — reemplaza estos datos con tus instalaciones reales
+  (foto de tu proyecto, comuna, potencia y ahorro que vio el cliente).
+  Si un campo no lo conoces, déjalo vacío ('') y no se mostrará.
+*/
+const PROJECTS: { img: string; tipo: string; comuna: string; kwp: string; ahorro: string }[] = [
+  { img: 'https://images.unsplash.com/photo-1508873535684-277a3cbcc4e8?q=80&w=800&auto=format&fit=crop', tipo: 'Vivienda', comuna: 'TODO: comuna', kwp: 'TODO kWp', ahorro: '' },
+  { img: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=800&auto=format&fit=crop', tipo: 'Comercio', comuna: 'TODO: comuna', kwp: 'TODO kWp', ahorro: '' },
+  { img: 'https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=800&auto=format&fit=crop', tipo: 'Industria', comuna: 'TODO: comuna', kwp: 'TODO kWp', ahorro: '' },
+]
+
+/* Planes: ajusta potencias y textos a tus kits reales. Precio opcional (deja null para "Cotizar"). */
+const PLANS: { name: string; kwp: string; para: string; price: number | null; popular?: boolean; items: string[]; msg: string }[] = [
+  {
+    name: 'Hogar Básico',
+    kwp: '~2 kWp',
+    para: 'Cuentas de luz bajas o departamentos con techo',
+    price: null,
+    items: ['Paneles + inversor on-grid', 'Estructura de montaje', 'Instalación y trámite SEC', 'Monitoreo desde el celular'],
+    msg: '¡Hola! 👋 Vi el *Plan Hogar Básico (~2 kWp)* en su web y me gustaría cotizarlo.\n\n📍 Comuna: \n💡 Pago aprox. de luz al mes: $\n🏠 Tipo de techo (zinc, teja, losa…): \n\nSi quieren, les envío una foto de mi boleta. ¡Gracias!',
+  },
+  {
+    name: 'Hogar Familiar',
+    kwp: '~4 kWp',
+    para: 'Familias con consumo medio-alto',
+    price: null,
+    popular: true,
+    items: ['Paneles + inversor on-grid', 'Estructura de montaje', 'Instalación y trámite SEC', 'Monitoreo desde el celular', 'Visita técnica post-instalación'],
+    msg: '¡Hola! 👋 Me interesa el *Plan Hogar Familiar (~4 kWp)* para bajar la cuenta de luz de mi casa.\n\n📍 Comuna: \n💡 Pago aprox. de luz al mes: $\n👨‍👩‍👧 Personas en la casa: \n🏠 Tipo de techo: \n\n¿Podemos agendar la visita técnica sin costo? Les puedo enviar foto de mi boleta.',
+  },
+  {
+    name: 'Comercio / Pyme',
+    kwp: 'A medida',
+    para: 'Locales, oficinas y talleres',
+    price: null,
+    items: ['Estudio de consumo', 'Diseño de ingeniería', 'Instalación y puesta en marcha', 'Soporte técnico'],
+    msg: '¡Hola! 👋 Tengo un negocio y quiero evaluar el *Plan Comercio / Pyme* para reducir nuestros costos de energía.\n\n🏢 Tipo de negocio: \n📍 Comuna: \n💡 Gasto mensual en luz aprox.: $\n\nMe gustaría coordinar un estudio de consumo. ¿Qué información necesitan de mi parte?',
+  },
+]
+
+const clp = (n: number) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(n)
 
 export default async function HomePage() {
   const { data: products } = await supabase
@@ -57,502 +111,544 @@ export default async function HomePage() {
     .limit(8)
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
+    <div className="min-h-screen bg-[#F6F8FB] pb-20 text-slate-800 antialiased md:pb-0">
       <style>{`
-        @keyframes heroEnter {
-          from { opacity: 0; transform: translateY(18px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes softFloat {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
-        @keyframes glowPulse {
-          0%, 100% { opacity: 0.35; transform: scale(1); }
-          50% { opacity: 0.6; transform: scale(1.06); }
-        }
-        @keyframes ctaRing {
-          0% { transform: scale(1); opacity: 0.45; }
-          100% { transform: scale(1.6); opacity: 0; }
-        }
-        .hero-anim {
-          opacity: 0;
-          animation: heroEnter 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        .float-anim {
-          animation: softFloat 5s ease-in-out infinite;
-        }
-        .glow-anim {
-          animation: glowPulse 4.5s ease-in-out infinite;
-        }
-        .cta-ring {
-          animation: ctaRing 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
+        @keyframes rise { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: none } }
+        @keyframes sunrise { from { transform: translateY(40px) scale(.9); opacity: 0 } to { transform: none; opacity: 1 } }
+        @keyframes drift { 0%,100% { transform: translateX(0) } 50% { transform: translateX(14px) } }
+        .rise { opacity: 0; animation: rise .8s cubic-bezier(.16,1,.3,1) forwards }
+        .sunrise { animation: sunrise 1.6s cubic-bezier(.16,1,.3,1) both }
+        .drift { animation: drift 9s ease-in-out infinite }
+        @keyframes shimmer { from { transform: translateX(-120%) skewX(-20deg) } to { transform: translateX(320%) skewX(-20deg) } }
+        .shimmer::after { content: ''; position: absolute; inset: 0; width: 35%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent); animation: shimmer 3.2s ease-in-out infinite; }
+        @keyframes grow { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+        .progress { transform-origin: 0 50%; animation: grow linear both; animation-timeline: scroll(root); }
+        @keyframes panelIn { from { opacity: 0; transform: perspective(900px) rotateX(10deg) translateY(30px) } to { opacity: 1; transform: none } }
+        .tilt-in { animation: panelIn 1s cubic-bezier(.16,1,.3,1) .5s both }
+        @keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,.55) } 100% { box-shadow: 0 0 0 18px rgba(16,185,129,0) } }
+        .pulse-ring { animation: pulseRing 2s ease-out infinite }
         @media (prefers-reduced-motion: reduce) {
-          .hero-anim, .float-anim, .glow-anim, .cta-ring {
-            animation: none !important;
-            opacity: 1 !important;
-            transform: none !important;
-          }
+          .rise, .sunrise, .drift, .tilt-in, .progress, .shimmer::after, .pulse-ring { animation: none !important; opacity: 1 !important; transform: none !important }
         }
       `}</style>
 
-     {/* HERO SECTION */}
-      <section className="relative bg-slate-100 text-slate-900 overflow-hidden pt-10 pb-16 md:pt-6 md:pb-14">
-        {/* Background Image with Gradient Overlay */}
-        <div className="absolute inset-0 z-0">
-          <Image 
-            src="https://dceupbfonovchzinruai.supabase.co/storage/v1/object/public/imagenes-pagina/ChatGPT%20Image%207%20sept%202026,%2012_08_39.webp" 
-            alt="Panel solar background"
-            fill
-            className="object-cover object-center"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0B2340] via-[#0B2340]/90 md:via-[#0B2340]/85 to-[#0B2340]/20" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B2340] via-transparent to-transparent opacity-70 md:opacity-60" />
-          <div className="absolute -top-24 -right-24 w-[350px] h-[350px] rounded-full bg-orange-500/20 blur-3xl glow-anim" />
+      <SunProgress />
+      <NightSky />
+      <DayClock />
+
+      {/* FRANJA SUPERIOR: oferta + contacto directo */}
+      <div className="bg-orange-600 text-white">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-6 gap-y-1 px-5 py-2 text-center text-xs font-medium md:justify-between md:px-8 md:text-sm">
+          <span className="flex items-center gap-2"><CalendarCheck className="h-4 w-4" /> Evaluación y cotización sin costo · Agenda tu visita técnica</span>
+          <a href={`tel:${PHONE_TEL}`} className="hidden items-center gap-2 hover:underline md:flex"><Phone className="h-4 w-4" /> {PHONE_DISPLAY}</a>
         </div>
+      </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-8 py-10 md:py-16 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Left Content */}
-          <div className="lg:col-span-8">
-            <div className="hero-anim flex items-center gap-2.5 mb-4 text-orange-400" style={{ animationDelay: '0.05s' }}>
-              <span className="w-6 h-px bg-current" />
-              <span className="text-xs font-semibold tracking-wide">Energía solar para un futuro mejor</span>
-            </div>
+      {/* HERO */}
+      <section className="relative isolate overflow-hidden bg-[#071A30] text-white">
+        <Image
+          src="https://dceupbfonovchzinruai.supabase.co/storage/v1/object/public/imagenes-pagina/ChatGPT%20Image%207%20sept%202026,%2012_08_39.webp"
+          alt=""
+          fill
+          priority
+          className="object-cover object-center opacity-40 -z-20"
+        />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#071A30] via-[#071A30]/90 to-[#071A30]/40" />
+        <div aria-hidden className="absolute inset-0 -z-10 opacity-[.07] [background-image:linear-gradient(#fff_1px,transparent_1px),linear-gradient(90deg,#fff_1px,transparent_1px)] [background-size:56px_56px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
+        <HeroSun />
 
-            <h1 className="hero-anim text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.15] mb-4 text-white max-w-2xl" style={{ animationDelay: '0.15s' }}>
-              Soluciones solares integrales para hogares y empresas
-            </h1>
-
-            <p className="hero-anim text-base md:text-lg text-slate-300 mb-8 leading-relaxed max-w-lg font-light" style={{ animationDelay: '0.3s' }}>
-              Transformamos la luz del sol en energía que impulsa tu vida, con los más altos estándares de ingeniería y autonomía.
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 pb-20 pt-14 md:px-8 md:pb-28 md:pt-20 lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <p className="rise text-sm font-medium text-amber-300" style={{ animationDelay: '.05s' }}>
+              Energía solar para hogares y empresas en Chile
             </p>
-
-            <div className="hero-anim flex flex-col sm:flex-row gap-4" style={{ animationDelay: '0.45s' }}>
-              <a 
-                href="#tienda"
-                className="w-full sm:w-auto bg-orange-600 hover:bg-orange-500 active:scale-[0.98] text-white px-6 py-3.5 md:py-3 rounded-lg font-semibold text-sm transition-all duration-200 shadow-md shadow-orange-950/40 flex items-center justify-center gap-2 group text-center"
-              >
-                <span>Cotiza tus productos</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <h1 className={`${display.className} rise mt-4 text-5xl font-extrabold leading-[1.02] tracking-tight md:text-7xl`} style={{ animationDelay: '.15s' }}>
+              Tu techo ya recibe energía gratis. Úsala.
+            </h1>
+            <p className="rise mt-6 max-w-xl text-lg leading-relaxed text-slate-300" style={{ animationDelay: '.3s' }}>
+              Baja tu cuenta de luz con un sistema fotovoltaico diseñado según tu consumo real. Nosotros nos encargamos de todo: diseño, equipos, instalación y trámites.
+            </p>
+            <div className="rise mt-9 flex flex-col gap-3 sm:flex-row" style={{ animationDelay: '.45s' }}>
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="shimmer group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-orange-600 px-7 py-4 text-sm font-semibold shadow-lg shadow-orange-950/40 transition hover:bg-orange-500 active:scale-[.98]">
+                <MessageCircle className="h-4 w-4" />
+                Cotizar gratis por WhatsApp
               </a>
-              <a 
-                href="#servicios"
-                className="w-full sm:w-auto border border-white/30 hover:bg-white/10 active:scale-[0.98] text-white px-6 py-3.5 md:py-3 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 text-center"
-              >
-                <span>Conoce nuestros servicios</span>
+              <a href="#planes" className="group inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 px-7 py-4 text-sm font-semibold transition hover:bg-white/10">
+                Ver planes
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </a>
             </div>
-          </div>
-
-          {/* Right Floating Card */}
-          <div className="hidden lg:flex lg:col-span-4 justify-end">
-            <div
-              className="hero-anim float-anim bg-white/95 backdrop-blur-md p-5 rounded-2xl shadow-xl w-60 border-l-4 border-orange-500"
-              style={{ animationDelay: '0.6s' }}
-            >
-              <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center mb-3">
-                <Leaf className="w-4 h-4" />
-              </div>
-              <h4 className="font-bold text-[#0F172A] text-sm leading-snug">
-                Energía limpia hoy, un mejor mañana
-              </h4>
+            <div className="rise mt-10 flex flex-wrap gap-x-8 gap-y-3 text-sm text-slate-300" style={{ animationDelay: '.6s' }}>
+              <span className="flex items-center gap-2"><Award className="h-4 w-4 text-amber-300" /> Instalación certificada SEC</span>
+              <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-amber-300" /> Paneles con garantía de hasta 25 años</span>
+              <span className="flex items-center gap-2"><CreditCard className="h-4 w-4 text-amber-300" /> Facilidades de pago</span>
             </div>
           </div>
-        </div>
 
-        {/* Feature Badges Grid */}
-        <div className="relative z-10 max-w-7xl mx-auto px-5 md:px-8 mt-4">
-          <div className="hero-anim bg-white rounded-2xl shadow-xl p-5 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-5 divide-y sm:divide-y-0 sm:divide-x divide-slate-100" style={{ animationDelay: '0.75s' }}>
-            <div className="flex items-center gap-4 pt-0 sm:pt-0">
-              <div className="w-11 h-11 md:w-10 md:h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 flex-shrink-0">
-                <Leaf className="w-5 h-5 md:w-4 md:h-4" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-[#0F172A] text-sm md:text-xs">Energía limpia</h4>
-                <p className="text-xs md:text-[11px] text-slate-500">Cuida el planeta</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 pt-4 sm:pt-0 sm:pl-5">
-              <div className="w-11 h-11 md:w-10 md:h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 flex-shrink-0">
-                <TrendingUp className="w-5 h-5 md:w-4 md:h-4" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-[#0F172A] text-sm md:text-xs">Ahorro real</h4>
-                <p className="text-xs md:text-[11px] text-slate-500">Reduce tus costos</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 pt-4 sm:pt-4 lg:pt-0 lg:pl-5">
-              <div className="w-11 h-11 md:w-10 md:h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 flex-shrink-0">
-                <HomeIcon className="w-5 h-5 md:w-4 md:h-4" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-[#0F172A] text-sm md:text-xs">Soluciones a medida</h4>
-                <p className="text-xs md:text-[11px] text-slate-500">Hogares y empresas</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 pt-4 sm:pt-4 lg:pt-0 sm:pl-5">
-              <div className="w-11 h-11 md:w-10 md:h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 flex-shrink-0">
-                <ShieldCheck className="w-5 h-5 md:w-4 md:h-4" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-[#0F172A] text-sm md:text-xs">Asesoría experta</h4>
-                <p className="text-xs md:text-[11px] text-slate-500">En todo el proceso</p>
-              </div>
-            </div>
+          <div className="tilt-in lg:col-span-5">
+            <SavingsCalculator />
+            <a href={wa('Hola, usé la calculadora de ahorro de su web y quiero una cotización exacta para mi casa')} target="_blank" rel="noopener noreferrer" className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600">
+              <MessageCircle className="h-4 w-4" /> Quiero mi cotización exacta
+            </a>
           </div>
-        </div>
-
-        {/* Floating WhatsApp Button */}
-        <div className="fixed bottom-6 right-6 z-50">
-          <span className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-40" />
-          <a 
-            href="https://whatsapp.com" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="relative w-14 h-14 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-2xl flex items-center justify-center transition-transform hover:scale-110 cursor-pointer"
-            aria-label="WhatsApp"
-          >
-            <MessageCircle className="w-6 h-6 fill-white" />
-          </a>
         </div>
       </section>
 
-      {/* BRAND CAROUSEL */}
-      <section className="bg-white py-10 md:py-14 border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-5 md:px-8">
-          <p className="text-center text-sm text-slate-500 mb-6 md:mb-8">
-            Trabajamos con las mejores marcas del mercado
-          </p>
+      {/* MARCAS */}
+      <section className="border-b border-slate-200 bg-white py-10">
+        <div className="mx-auto max-w-7xl px-5 md:px-8">
+          <p className="mb-6 text-center text-sm text-slate-500">Instalamos equipos de las marcas que lideran el mercado</p>
           <BrandCarousel />
         </div>
       </section>
 
-      {/* ACERCA DE SECTION */}
-      <section id="acerca" className="py-16 md:py-20 bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-5 md:px-8 grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-14 items-center">
-          <ScrollReveal as="slide-right">
-            <SectionKicker label="Sobre R&S Soluciones Solares" />
-            <h2 className="text-3xl md:text-4xl font-extrabold text-[#0F172A] mb-6 leading-tight max-w-lg">
-              Impulsando la transición energética en Chile con ingeniería de vanguardia
-            </h2>
-            <p className="text-slate-600 leading-relaxed mb-8 max-w-lg">
-              Somos una empresa especializada en el diseño, suministro e instalación de sistemas fotovoltaicos avanzados. Nuestro propósito es otorgar independencia energética y reducción drástica de costos operativos a residencias, comercios e industrias.
-            </p>
-            <div className="flex flex-row gap-6 sm:gap-10 pt-6 border-t border-slate-200">
-              <div>
-                <div className="text-3xl md:text-4xl font-extrabold text-orange-600 mb-1">
-                  <AnimatedCounter value={500} prefix="+" />
-                </div>
-                <div className="text-xs md:text-sm text-slate-500">Proyectos instalados</div>
-              </div>
-              <div className="pl-6 sm:pl-10 border-l border-slate-200">
-                <div className="text-3xl md:text-4xl font-extrabold text-[#0F172A] mb-1">
-                  <AnimatedCounter value={25} suffix=" años" />
-                </div>
-                <div className="text-xs md:text-sm text-slate-500">Garantía en paneles</div>
-              </div>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal as="scale" delay={150}>
-            <div className="relative h-[250px] sm:h-[350px] md:h-96 rounded-2xl overflow-hidden shadow-lg bg-slate-100">
-              <Image 
-                src="https://images.unsplash.com/photo-1508873535684-277a3cbcc4e8?q=80&w=800&auto=format&fit=crop" 
-                alt="Instalación solar" 
-                fill
-                className="object-cover"
-              />
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* PROCESS SECTION */}
-      <section className="py-16 md:py-20 bg-slate-50 border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-5 md:px-8">
-          <ScrollReveal className="max-w-2xl mb-12 md:mb-16">
-            <SectionKicker label="Cómo funciona" />
-            <h2 className="text-3xl font-extrabold text-[#0F172A] mb-3">De la cotización a tu factura más baja</h2>
-            <p className="text-slate-600">Un proceso simple y acompañado en cada etapa, sin sorpresas.</p>
-          </ScrollReveal>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 relative">
-            <div className="hidden md:block absolute top-7 left-[16.5%] right-[16.5%] h-px bg-slate-300" />
-
-            <ScrollReveal as="scale" delay={0}>
-              <div className="relative bg-white rounded-2xl border border-slate-200 p-6 md:p-8 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-orange-200">
-                <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#0F172A] text-white flex items-center justify-center font-bold text-base md:text-lg mb-5 md:mb-6 relative z-10">01</div>
-                <ClipboardCheck className="w-6 h-6 text-orange-600 mb-4" strokeWidth={1.75} />
-                <h3 className="font-bold text-lg text-[#0F172A] mb-2">Diagnóstico y cotización</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">Evaluamos tu consumo y techo para diseñar el sistema que mejor se ajusta a tu presupuesto.</p>
-              </div>
-            </ScrollReveal>
-
-            <ScrollReveal as="scale" delay={120}>
-              <div className="relative bg-white rounded-2xl border border-slate-200 p-6 md:p-8 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-orange-200">
-                <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#0F172A] text-white flex items-center justify-center font-bold text-base md:text-lg mb-5 md:mb-6 relative z-10">02</div>
-                <Wrench className="w-6 h-6 text-orange-600 mb-4" strokeWidth={1.75} />
-                <h3 className="font-bold text-lg text-[#0F172A] mb-2">Instalación certificada</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">Nuestro equipo técnico instala y conecta tu sistema cumpliendo toda la normativa vigente.</p>
-              </div>
-            </ScrollReveal>
-
-            <ScrollReveal as="scale" delay={240}>
-              <div className="relative bg-white rounded-2xl border border-slate-200 p-6 md:p-8 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-orange-200">
-                <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#0F172A] text-white flex items-center justify-center font-bold text-base md:text-lg mb-5 md:mb-6 relative z-10">03</div>
-                <Gauge className="w-6 h-6 text-orange-600 mb-4" strokeWidth={1.75} />
-                <h3 className="font-bold text-lg text-[#0F172A] mb-2">Monitoreo y ahorro</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">Sigue tu generación en tiempo real y observa la reducción en tu cuenta de luz mes a mes.</p>
-              </div>
-            </ScrollReveal>
+      {/* PRODUCTOS */}
+      <section id="tienda" className="mx-auto max-w-7xl px-5 py-16 md:px-8 md:py-20">
+        <ScrollReveal className="mb-12 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+          <div className="max-w-xl">
+            <h2 className={`${display.className} text-4xl font-extrabold tracking-tight text-[#0A2A4A] md:text-5xl`}>Paneles, inversores y kits solares</h2>
+            <p className="mt-3 text-slate-600">Equipos de marcas líderes con despacho y opción de instalación. Compra en línea o cotiza con nosotros.</p>
           </div>
-        </div>
-      </section>
-
-      {/* PRODUCTS SECTION */}
-      <section id="tienda" className="max-w-7xl mx-auto px-5 md:px-8 py-16 md:py-20">
-        <ScrollReveal className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 md:mb-12">
-          <div>
-            <SectionKicker label="Nuestros productos" />
-            <h2 className="text-3xl md:text-4xl font-extrabold text-[#0F172A] tracking-tight">
-              Todo lo que necesitas para aprovechar el sol
-            </h2>
-          </div>
-          <Link href="/tienda" className="text-sm font-semibold text-[#0F172A] hover:text-orange-600 transition-colors mt-4 md:mt-0 flex items-center gap-2 group border border-slate-200 md:border-transparent px-4 py-2 md:px-0 md:py-0 rounded-lg w-full justify-center md:w-auto">
-            Ver otros productos
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          <Link href="/tienda" className="group inline-flex items-center gap-2 text-sm font-semibold text-[#0A2A4A] hover:text-orange-600">
+            Ver todos los productos <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </ScrollReveal>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {products && products.length > 0 ? (
             products.map((product: Product, index: number) => (
               <ScrollReveal key={product.id} as="fade-up" delay={(index % 4) * 90}>
-                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-xl hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group h-full">
+                <div className="group flex h-full flex-col justify-between overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200 transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:ring-orange-300">
                   <div>
-                    <div className="relative aspect-square w-full bg-slate-50 overflow-hidden">
-                      <Image 
-                        src={product.image_url || 'https://images.unsplash.com/photo-1508873535684-277a3cbcc4e8?q=80&w=600&auto=format&fit=crop'} 
+                    <div className="relative aspect-square w-full overflow-hidden bg-slate-100">
+                      <Image
+                        src={product.image_url || 'https://images.unsplash.com/photo-1508873535684-277a3cbcc4e8?q=80&w=600&auto=format&fit=crop'}
                         alt={product.name}
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
-                      <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[#0F172A] text-[11px] font-semibold px-3 py-1 rounded-full shadow-sm">
-                        {product.category || 'Equipo Solar'}
-                      </div>
+                      <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-[11px] font-semibold text-[#0A2A4A] shadow-sm">{product.category || 'Equipo solar'}</span>
+                      {product.stock > 0 && product.stock <= 5 && (
+                        <span className="absolute right-3 top-3 rounded-full bg-orange-600 px-3 py-1 text-[11px] font-semibold text-white shadow-sm">Últimas {product.stock} unidades</span>
+                      )}
+                      {product.stock === 0 && (
+                        <span className="absolute right-3 top-3 rounded-full bg-slate-700 px-3 py-1 text-[11px] font-semibold text-white shadow-sm">Agotado</span>
+                      )}
                     </div>
-
                     <div className="p-5">
-                      <Link href={`/products/${product.id}`} className="block group">
-                        <h3 className="text-lg font-bold text-[#0F172A] mb-2 group-hover:text-orange-600 transition-colors line-clamp-1">
-                          {product.name}
-                        </h3>
+                      <Link href={`/products/${product.id}`} className="block">
+                        <h3 className="line-clamp-1 text-lg font-bold text-[#0A2A4A] transition-colors group-hover:text-orange-600">{product.name}</h3>
                       </Link>
-                      <p className="text-sm text-slate-500 mb-4 line-clamp-2 leading-relaxed">
-                        {product.description}
-                      </p>
+                      <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-slate-500">{product.description}</p>
                     </div>
                   </div>
-
-                  <div className="p-5 pt-0 flex items-center justify-between border-t border-slate-100 mt-2 pt-4">
-                    <div>
-                      <span className="text-[11px] text-slate-400 block">IVA incluido</span>
-                      <span className="text-xl md:text-lg font-extrabold text-[#0F172A]">
-                        {new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(product.price)}
-                      </span>
+                  <div className="border-t border-slate-100 p-5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="block text-[11px] text-slate-400">IVA incluido</span>
+                        <span className="text-xl font-extrabold text-[#0A2A4A]">{clp(product.price)}</span>
+                      </div>
+                      <AddToCartButton product={product} />
                     </div>
-                    <AddToCartButton product={product} />
+                    <a href={wa(`Hola, tengo una consulta sobre el producto: ${product.name}`)} target="_blank" rel="noopener noreferrer" className="mt-3 flex items-center gap-1.5 text-xs font-medium text-emerald-600 hover:underline">
+                      <MessageCircle className="h-3.5 w-3.5" /> Consultar por WhatsApp
+                    </a>
                   </div>
                 </div>
               </ScrollReveal>
             ))
           ) : (
-            <div className="col-span-full py-16 text-center bg-white rounded-xl border border-slate-200">
-              <p className="text-slate-500 font-medium">No hay productos publicados todavía.</p>
-              <Link href="/iniciar-sesion" className="inline-block mt-4 text-orange-600 font-semibold hover:underline">
-                Accede como administrador para crear productos →
-              </Link>
+            <div className="col-span-full rounded-2xl bg-white py-16 text-center ring-1 ring-slate-200">
+              <p className="font-medium text-slate-500">Aún no hay productos publicados.</p>
+              <Link href="/iniciar-sesion" className="mt-4 inline-block font-semibold text-orange-600 hover:underline">Entra como administrador para crear el primero</Link>
             </div>
           )}
         </div>
       </section>
 
-      {/* SERVICES & VALUE PROPOSITION */}
-      <section id="servicios" className="bg-white py-16 md:py-20 border-t border-slate-200">
-        <div className="max-w-7xl mx-auto px-5 md:px-8">
-          <ScrollReveal className="max-w-2xl mb-12 md:mb-16">
-            <SectionKicker label="Por qué elegirnos" />
-            <h2 className="text-3xl font-extrabold text-[#0F172A] mb-3">Excelencia en ingeniería solar</h2>
-            <p className="text-slate-600">Garantizamos proyectos de alta durabilidad respaldados por los mejores fabricantes globales.</p>
+      {/* PLANES */}
+      <section id="planes" className="bg-white py-20 md:py-28">
+        <div className="mx-auto max-w-7xl px-5 md:px-8">
+          <ScrollReveal className="mb-12 max-w-2xl">
+            <h2 className={`${display.className} text-4xl font-extrabold tracking-tight text-[#0A2A4A] md:text-5xl`}>Elige tu plan solar</h2>
+            <p className="mt-4 text-slate-600">Todo incluido: equipos, instalación, trámite de conexión y monitoreo. Ajustamos la potencia exacta a tu consumo.</p>
           </ScrollReveal>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-slate-200 rounded-2xl overflow-hidden shadow-sm">
-            <ScrollReveal delay={0}>
-              <div className="p-6 md:p-8 bg-white h-full transition-colors duration-300 hover:bg-orange-50/40">
-                <Globe2 className="w-7 h-7 md:w-6 md:h-6 text-orange-600 mb-4 md:mb-5" strokeWidth={1.75} />
-                <h3 className="font-bold text-base text-[#0F172A] mb-2">Marcas mundiales</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">Trabajamos con las principales marcas del mundo en inversores y paneles.</p>
-              </div>
-            </ScrollReveal>
-            <ScrollReveal delay={90}>
-              <div className="p-6 md:p-8 bg-white h-full transition-colors duration-300 hover:bg-orange-50/40">
-                <Star className="w-7 h-7 md:w-6 md:h-6 text-orange-600 mb-4 md:mb-5" strokeWidth={1.75} />
-                <h3 className="font-bold text-base text-[#0F172A] mb-2">Calidad garantizada</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">Todos nuestros equipos cuentan con certificación internacional y garantía de hasta 25 años.</p>
-              </div>
-            </ScrollReveal>
-            <ScrollReveal delay={180}>
-              <div className="p-6 md:p-8 bg-white h-full transition-colors duration-300 hover:bg-orange-50/40">
-                <Tag className="w-7 h-7 md:w-6 md:h-6 text-orange-600 mb-4 md:mb-5" strokeWidth={1.75} />
-                <h3 className="font-bold text-base text-[#0F172A] mb-2">Ofertas y retorno</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">Optimiza tu inversión con kits diseñados para el máximo retorno financiero.</p>
-              </div>
-            </ScrollReveal>
-            <ScrollReveal delay={270}>
-              <div className="p-6 md:p-8 bg-white h-full transition-colors duration-300 hover:bg-orange-50/40">
-                <Lock className="w-7 h-7 md:w-6 md:h-6 text-orange-600 mb-4 md:mb-5" strokeWidth={1.75} />
-                <h3 className="font-bold text-base text-[#0F172A] mb-2">Seguridad y soporte</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">Métodos de pago confiables y soporte técnico especializado post-venta.</p>
-              </div>
-            </ScrollReveal>
-          </div>
-
-          <ScrollReveal className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-center gap-x-6 gap-y-4 md:gap-x-12 md:gap-y-6 mt-12 md:mt-14 pt-10 md:pt-14 border-t border-slate-200">
-            <div className="flex items-center gap-2.5 text-slate-500">
-              <Award className="w-5 h-5 text-orange-600" strokeWidth={1.75} />
-              <span className="text-sm font-medium">Certificación SEC</span>
-            </div>
-            <div className="flex items-center gap-2.5 text-slate-500">
-              <BadgeCheck className="w-5 h-5 text-orange-600" strokeWidth={1.75} />
-              <span className="text-sm font-medium">Instaladores autorizados</span>
-            </div>
-            <div className="flex items-center gap-2.5 text-slate-500">
-              <Zap className="w-5 h-5 text-orange-600" strokeWidth={1.75} />
-              <span className="text-sm font-medium">Conexión a la red eléctrica</span>
-            </div>
-            <div className="flex items-center gap-2.5 text-slate-500">
-              <ShieldCheck className="w-5 h-5 text-orange-600" strokeWidth={1.75} />
-              <span className="text-sm font-medium">Garantía extendida</span>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* TESTIMONIALS & SOCIALS */}
-      <section className="bg-[#0B2340] text-white py-16 md:py-20 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-5 md:px-8">
-          <ScrollReveal className="max-w-2xl mb-12 md:mb-16">
-            <SectionKicker label="Testimonios reales" dark />
-            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Lo que dicen nuestros clientes en Facebook</h2>
-            <p className="text-slate-400 text-sm">Comentarios y experiencias extraídas directamente de nuestra comunidad.</p>
-          </ScrollReveal>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-12">
-            <ScrollReveal as="slide-right">
-              <blockquote className="bg-white/5 p-6 md:p-8 rounded-2xl border border-white/10 flex flex-col justify-between h-full transition-colors duration-300 hover:bg-white/[0.08]">
-                <p className="text-slate-200 text-base mb-6 md:mb-8 leading-relaxed">
-                  &ldquo;Excelente atención y servicio de instalación. Totalmente recomendado para quienes buscan reducir sus costos de energía de forma segura y profesional.&rdquo;
-                </p>
-                <div className="flex items-center justify-between border-t border-white/10 pt-4">
-                  <div>
-                    <h4 className="font-semibold text-white text-sm">María Elena Soto</h4>
-                    <p className="text-xs text-orange-400">Opinión verificada</p>
+          <div className="grid items-stretch gap-6 md:grid-cols-3">
+            {PLANS.map((p, i) => (
+              <ScrollReveal key={p.name} delay={i * 110}>
+                <div className={`relative flex h-full flex-col rounded-3xl p-8 ${p.popular ? 'bg-[#0A2A4A] text-white shadow-2xl ring-2 ring-orange-500 md:-translate-y-3' : 'bg-[#F6F8FB] ring-1 ring-slate-200'}`}>
+                  {p.popular && (
+                    <span className="absolute -top-3 left-8 rounded-full bg-orange-600 px-3 py-1 text-xs font-bold text-white">Más elegido</span>
+                  )}
+                  <h3 className={`${display.className} text-2xl font-bold ${p.popular ? '' : 'text-[#0A2A4A]'}`}>{p.name}</h3>
+                  <p className={`mt-1 text-sm ${p.popular ? 'text-slate-300' : 'text-slate-500'}`}>{p.para}</p>
+                  <div className={`${display.className} mt-6 text-4xl font-extrabold ${p.popular ? 'text-amber-400' : 'text-orange-600'}`}>
+                    {p.price ? clp(p.price) : p.kwp}
                   </div>
-                  <span className="text-blue-300 text-[10px] md:text-xs font-medium bg-blue-500/10 px-2.5 md:px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                    Facebook
-                  </span>
+                  <p className={`text-xs ${p.popular ? 'text-slate-400' : 'text-slate-400'}`}>{p.price ? `${p.kwp} · IVA incluido · consulta cuotas` : 'Precio según tu techo y consumo'}</p>
+                  <ul className="mt-6 flex-1 space-y-2.5 text-sm">
+                    {p.items.map((x) => (
+                      <li key={x} className="flex items-start gap-2"><Check className={`mt-0.5 h-4 w-4 flex-none ${p.popular ? 'text-amber-400' : 'text-orange-600'}`} /> {x}</li>
+                    ))}
+                  </ul>
+                  <a
+                    href={wa(p.msg)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`mt-8 inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-semibold transition ${p.popular ? 'bg-orange-600 text-white hover:bg-orange-500' : 'bg-white text-[#0A2A4A] ring-1 ring-slate-300 hover:ring-orange-500'}`}
+                  >
+                    Cotizar este plan <ArrowRight className="h-4 w-4" />
+                  </a>
                 </div>
-              </blockquote>
-            </ScrollReveal>
-
-            <ScrollReveal as="slide-left">
-              <blockquote className="bg-white/5 p-6 md:p-8 rounded-2xl border border-white/10 flex flex-col justify-between h-full transition-colors duration-300 hover:bg-white/[0.08]">
-                <p className="text-slate-200 text-base mb-6 md:mb-8 leading-relaxed">
-                  &ldquo;Muy buena asesoría desde el primer contacto. El kit solar funciona a la perfección y el equipo técnico resolvió todas nuestras dudas paso a paso.&rdquo;
-                </p>
-                <div className="flex items-center justify-between border-t border-white/10 pt-4">
-                  <div>
-                    <h4 className="font-semibold text-white text-sm">Carlos Morales</h4>
-                    <p className="text-xs text-orange-400">Opinión verificada</p>
-                  </div>
-                  <span className="text-blue-300 text-[10px] md:text-xs font-medium bg-blue-500/10 px-2.5 md:px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                    Facebook
-                  </span>
-                </div>
-              </blockquote>
-            </ScrollReveal>
+              </ScrollReveal>
+            ))}
           </div>
-
-          <ScrollReveal as="scale">
-            <div className="bg-white/5 p-6 md:p-8 rounded-2xl border border-white/10 text-center max-w-xl mx-auto">
-              <h3 className="text-lg font-bold mb-2">Síguenos en redes sociales</h3>
-              <p className="text-slate-400 text-sm mb-6">Conoce más opiniones y proyectos ejecutados en nuestras plataformas oficiales.</p>
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto justify-center bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 text-white px-6 py-3.5 md:py-3 rounded-lg font-semibold text-sm hover:opacity-90 hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2">
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                  </svg>
-                  Instagram
-                </a>
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto justify-center bg-blue-600 hover:bg-blue-500 hover:-translate-y-0.5 text-white px-6 py-3.5 md:py-3 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center gap-2">
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                  </svg>
-                  Facebook
-                </a>
-              </div>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* CTA BANNER */}
-      <section className="relative bg-orange-600 py-16 overflow-hidden">
-        <div className="absolute -bottom-16 -left-16 w-72 h-72 rounded-full bg-white/10 float-anim" style={{ animationDuration: '7s' }} />
-        <div className="absolute -top-10 right-10 w-40 h-40 rounded-full bg-white/10 float-anim" style={{ animationDuration: '6s', animationDelay: '1s' }} />
-        <ScrollReveal as="scale" className="relative max-w-4xl mx-auto px-5 md:px-8 text-center">
-          <h2 className="text-2xl md:text-3xl font-extrabold text-white mb-4 leading-tight">
-            ¿Listo para reducir tu cuenta de luz?
-          </h2>
-          <p className="text-orange-50 mb-8 max-w-xl mx-auto text-sm md:text-base">
-            Solicita una cotización sin costo y te asesoramos según tu consumo, tu techo y tu presupuesto.
+          <p className="mt-8 flex items-center justify-center gap-2 text-center text-sm text-slate-500">
+            <CreditCard className="h-4 w-4 text-orange-600" /> Pregúntanos por las opciones de pago y cuotas disponibles.
           </p>
-          <a
-            href="#contacto"
-            className="relative flex sm:inline-flex items-center justify-center gap-2.5 bg-white text-orange-600 px-8 py-4 rounded-lg font-bold hover:bg-orange-50 hover:-translate-y-0.5 transition-all duration-200 group w-full sm:w-auto"
-          >
-            <span className="absolute inset-0 rounded-lg bg-white cta-ring" />
-            <span className="relative">Solicitar cotización gratis</span>
-            <ArrowRight className="relative w-5 h-5 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform" />
-          </a>
+        </div>
+      </section>
+
+      {/* RETORNO DE INVERSIÓN */}
+      <section className="bg-white py-16 md:py-20">
+        <div className="mx-auto max-w-7xl px-5 md:px-8">
+          <ScrollReveal className="mb-10 max-w-2xl">
+            <h2 className={`${display.className} text-4xl font-extrabold tracking-tight text-[#0A2A4A] md:text-5xl`}>No es un gasto, es una inversión que se paga sola</h2>
+            <p className="mt-4 text-slate-600">Lo que hoy pagas en la cuenta de luz se convierte en un sistema que es tuyo y produce energía por décadas.</p>
+          </ScrollReveal>
+          <div className="grid gap-5 md:grid-cols-3">
+            {[
+              { Icon: TrendingDown, t: 'Baja tu cuenta desde el primer mes', d: 'Consumes tu propia energía durante el día y los excedentes se descuentan vía Net Billing.' },
+              { Icon: Sun, t: 'Décadas de generación', d: 'Los paneles tienen una vida útil de 25 años o más, con muy poca mantención.' },
+              { Icon: House, t: 'Tu propiedad vale más', d: 'Una casa con energía solar es más atractiva para vender o arrendar.' },
+            ].map(({ Icon, t, d }, i) => (
+              <ScrollReveal key={t} delay={i * 100}>
+                <div className="h-full rounded-3xl bg-[#F6F8FB] p-7 ring-1 ring-slate-200">
+                  <Icon className="mb-5 h-7 w-7 text-orange-600" strokeWidth={1.75} />
+                  <h3 className="text-lg font-bold text-[#0A2A4A]">{t}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{d}</p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SISTEMA EN ACCIÓN */}
+      <section className="bg-[#F6F8FB] py-20 md:py-28">
+        <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 md:px-8 lg:grid-cols-12">
+          <ScrollReveal className="lg:col-span-5">
+            <h2 className={`${display.className} text-4xl font-extrabold leading-tight tracking-tight text-[#0A2A4A] md:text-5xl`}>Así trabaja tu sistema cada día</h2>
+            <p className="mt-5 leading-relaxed text-slate-600">
+              Los paneles generan energía, el inversor la convierte en corriente para tu casa y los excedentes se inyectan a la red para descontarlos de tu cuenta.
+            </p>
+            <ul className="mt-6 space-y-3 text-sm text-slate-700">
+              {['Consumes primero lo que generas', 'Los excedentes van a la red, no se pierden', 'Monitoreas todo desde tu celular'].map((x) => (
+                <li key={x} className="flex items-start gap-3"><Check className="mt-0.5 h-4 w-4 flex-none text-orange-600" /> {x}</li>
+              ))}
+            </ul>
+          </ScrollReveal>
+          <ScrollReveal as="scale" delay={120} className="lg:col-span-7">
+            <EnergyFlow />
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* ACERCA */}
+      <section id="acerca" className="bg-[#F6F8FB] py-20 md:py-28">
+        <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 md:px-8 lg:grid-cols-2">
+          <ScrollReveal as="slide-right">
+            <h2 className={`${display.className} max-w-lg text-4xl font-extrabold leading-tight tracking-tight text-[#0A2A4A] md:text-5xl`}>
+              Ingeniería solar hecha en Chile, para que dejes de depender de la cuenta de luz
+            </h2>
+            <p className="mt-6 max-w-lg leading-relaxed text-slate-600">
+              R&amp;S Soluciones Solares diseña, suministra e instala sistemas fotovoltaicos para casas, comercios e industrias. Cada proyecto parte de tu consumo real, no de un kit genérico.
+            </p>
+            <div className="mt-10 flex gap-10 border-t border-slate-200 pt-8">
+              <div>
+                {/* Verifica que esta cifra sea real antes de publicar */}
+                <div className={`${display.className} text-5xl font-extrabold text-orange-600`}><AnimatedCounter value={500} prefix="+" /></div>
+                <div className="mt-1 text-sm text-slate-500">Proyectos instalados</div>
+              </div>
+              <div className="border-l border-slate-200 pl-10">
+                <div className={`${display.className} text-5xl font-extrabold text-[#0A2A4A]`}><AnimatedCounter value={25} suffix=" años" /></div>
+                <div className="mt-1 text-sm text-slate-500">Garantía en paneles</div>
+              </div>
+            </div>
+          </ScrollReveal>
+          <ScrollReveal as="scale" delay={150}>
+            <div className="relative h-[320px] overflow-hidden rounded-[2rem] shadow-2xl md:h-[460px]">
+              <Image src="https://images.unsplash.com/photo-1508873535684-277a3cbcc4e8?q=80&w=1000&auto=format&fit=crop" alt="Instalación de paneles solares" fill className="object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#071A30]/60 via-transparent to-transparent" />
+              <div className="absolute bottom-5 left-5 right-5 rounded-2xl bg-white/95 p-4 text-sm font-semibold text-[#0A2A4A] backdrop-blur">
+                Instaladores autorizados, con equipos certificados
+              </div>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* PROYECTOS REALIZADOS */}
+      <section id="proyectos" className="bg-white py-20 md:py-28">
+        <div className="mx-auto max-w-7xl px-5 md:px-8">
+          <ScrollReveal className="mb-12 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+            <div className="max-w-2xl">
+              <h2 className={`${display.className} text-4xl font-extrabold tracking-tight text-[#0A2A4A] md:text-5xl`}>Proyectos que ya están ahorrando</h2>
+              <p className="mt-4 text-slate-600">Algunas de nuestras instalaciones. Más fotos y videos en nuestras redes.</p>
+            </div>
+            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="group inline-flex items-center gap-2 text-sm font-semibold text-[#0A2A4A] hover:text-orange-600">
+              <Instagram className="h-4 w-4" /> Ver más en Instagram <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </a>
+          </ScrollReveal>
+          <div className="grid gap-6 md:grid-cols-3">
+            {PROJECTS.map((p, i) => (
+              <ScrollReveal key={i} as="fade-up" delay={i * 100}>
+                <article className="group overflow-hidden rounded-3xl bg-[#F6F8FB] ring-1 ring-slate-200">
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <Image src={p.img} alt={`Proyecto solar ${p.tipo} en ${p.comuna}`} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-[11px] font-semibold text-[#0A2A4A]">{p.tipo}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2 p-5 text-sm text-slate-600">
+                    {p.comuna && <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-orange-600" /> {p.comuna}</span>}
+                    {p.kwp && <span className="flex items-center gap-1.5"><Zap className="h-4 w-4 text-orange-600" /> {p.kwp}</span>}
+                    {p.ahorro && <span className="flex items-center gap-1.5 font-semibold text-emerald-600"><TrendingDown className="h-4 w-4" /> {p.ahorro}</span>}
+                  </div>
+                </article>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SEGMENTOS */}
+      <section className="bg-[#F6F8FB] py-20 md:py-28">
+        <div className="mx-auto max-w-7xl px-5 md:px-8">
+          <ScrollReveal className="mb-12 max-w-2xl">
+            <h2 className={`${display.className} text-4xl font-extrabold tracking-tight text-[#0A2A4A] md:text-5xl`}>Una solución para cada techo</h2>
+          </ScrollReveal>
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              { Icon: House, t: 'Hogares', d: 'Reduce tu cuenta de luz con un sistema a la medida de tu familia.', l: ['Kits residenciales', 'Instalación en techo', 'Monitoreo en el celular'] },
+              { Icon: Building2, t: 'Comercios', d: 'Baja tus costos fijos de energía y estabiliza tus gastos.', l: ['Proyectos a medida', 'Evaluación de retorno', 'Soporte técnico'] },
+              { Icon: Factory, t: 'Industrias', d: 'Sistemas de mayor potencia, con ingeniería y puesta en marcha.', l: ['Estudio de consumo', 'Diseño de ingeniería', 'Mantención programada'] },
+            ].map(({ Icon, t, d, l }, i) => (
+              <ScrollReveal key={t} delay={i * 110}>
+                <article className="group relative h-full overflow-hidden rounded-3xl bg-white p-8 ring-1 ring-slate-200 transition duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:ring-orange-300">
+                  <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gradient-to-br from-amber-300 to-orange-500 opacity-0 blur-2xl transition duration-500 group-hover:opacity-30" />
+                  <div className="relative">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600 transition group-hover:bg-orange-600 group-hover:text-white"><Icon className="h-6 w-6" strokeWidth={1.75} /></span>
+                    <h3 className={`${display.className} mt-6 text-2xl font-bold text-[#0A2A4A]`}>{t}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{d}</p>
+                    <ul className="mt-5 space-y-2 text-sm text-slate-700">
+                      {l.map((x) => <li key={x} className="flex items-center gap-2"><Check className="h-4 w-4 text-orange-600" /> {x}</li>)}
+                    </ul>
+                    <a href={wa(`Hola, quiero cotizar un sistema solar para ${t.toLowerCase()}`)} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#0A2A4A] hover:text-orange-600">
+                      Cotizar para {t.toLowerCase()} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </a>
+                  </div>
+                </article>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PROCESO */}
+      <section id="proceso" className="bg-[#0A2A4A] py-20 text-white md:py-28">
+        <div className="mx-auto max-w-7xl px-5 md:px-8">
+          <ScrollReveal className="mb-14 max-w-2xl">
+            <h2 className={`${display.className} text-4xl font-extrabold tracking-tight md:text-5xl`}>De la cotización a una cuenta de luz más baja</h2>
+            <p className="mt-4 text-slate-300">Tres etapas, con acompañamiento en cada una.</p>
+          </ScrollReveal>
+          <ol className="grid gap-px overflow-hidden rounded-3xl bg-white/10 md:grid-cols-3">
+            {[
+              { n: '1', Icon: ClipboardCheck, t: 'Diagnóstico y cotización', d: 'Evaluamos tu consumo y tu techo para diseñar el sistema que se ajusta a tu presupuesto. Sin costo.' },
+              { n: '2', Icon: Wrench, t: 'Instalación certificada', d: 'Nuestro equipo técnico instala, conecta y realiza los trámites ante la SEC y la distribuidora.' },
+              { n: '3', Icon: Gauge, t: 'Monitoreo y ahorro', d: 'Revisa tu generación en tiempo real y compara tu cuenta de luz mes a mes.' },
+            ].map(({ n, Icon, t, d }, i) => (
+              <li key={n} className="bg-[#0A2A4A] p-8 md:p-10">
+                <ScrollReveal as="fade-up" delay={i * 120}>
+                  <div className="mb-8 flex items-center justify-between">
+                    <span className={`${display.className} text-6xl font-extrabold text-amber-400`}>{n}</span>
+                    <Icon className="h-7 w-7 text-orange-400" strokeWidth={1.75} />
+                  </div>
+                  <h3 className="text-xl font-bold">{t}</h3>
+                  <p className="mt-3 leading-relaxed text-slate-300">{d}</p>
+                </ScrollReveal>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-10 text-center">
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-7 py-4 text-sm font-semibold transition hover:bg-orange-500">
+              <MessageCircle className="h-4 w-4" /> Empezar con el paso 1
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* POR QUÉ ELEGIRNOS */}
+      <section id="servicios" className="bg-white py-20 md:py-28">
+        <div className="mx-auto max-w-7xl px-5 md:px-8">
+          <ScrollReveal className="mb-12 max-w-2xl">
+            <h2 className={`${display.className} text-4xl font-extrabold tracking-tight text-[#0A2A4A] md:text-5xl`}>Por qué elegirnos</h2>
+            <p className="mt-4 text-slate-600">Proyectos pensados para durar, respaldados por fabricantes reconocidos.</p>
+          </ScrollReveal>
+          <div className="grid gap-5 md:grid-cols-3">
+            <ScrollReveal className="md:col-span-2 md:row-span-2">
+              <div className="flex h-full flex-col justify-between rounded-3xl bg-gradient-to-br from-orange-600 to-amber-500 p-8 text-white md:p-10">
+                <Star className="h-8 w-8" strokeWidth={1.75} />
+                <div className="mt-16">
+                  <h3 className={`${display.className} text-3xl font-extrabold md:text-4xl`}>Garantías claras, por escrito</h3>
+                  <ul className="mt-5 grid max-w-lg gap-3 text-orange-50 sm:grid-cols-3">
+                    {/* Ajusta los plazos a los que realmente ofreces */}
+                    <li><span className="block text-2xl font-extrabold text-white">Hasta 25 años</span>Rendimiento de paneles (fabricante)</li>
+                    <li><span className="block text-2xl font-extrabold text-white">Según marca</span>Inversor (fabricante)</li>
+                    <li><span className="block text-2xl font-extrabold text-white">R&amp;S</span>Garantía de nuestra instalación</li>
+                  </ul>
+                </div>
+              </div>
+            </ScrollReveal>
+            {[
+              { Icon: Globe2, t: 'Marcas mundiales', d: 'Inversores y paneles de los principales fabricantes.' },
+              { Icon: Tag, t: 'Kits con retorno', d: 'Kits armados para recuperar tu inversión lo antes posible.' },
+              { Icon: Lock, t: 'Pago seguro y soporte', d: 'Métodos de pago confiables y soporte técnico después de la venta.' },
+              { Icon: BadgeCheck, t: 'Instaladores autorizados', d: 'Trámites y conexión a la red resueltos por nuestro equipo.' },
+            ].map(({ Icon, t, d }, i) => (
+              <ScrollReveal key={t} delay={i * 90}>
+                <div className="h-full rounded-3xl bg-[#F6F8FB] p-7 ring-1 ring-slate-200">
+                  <Icon className="mb-5 h-6 w-6 text-orange-600" strokeWidth={1.75} />
+                  <h3 className="font-bold text-[#0A2A4A]">{t}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{d}</p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIOS */}
+      <section className="bg-[#071A30] py-20 text-white md:py-28">
+        <div className="mx-auto max-w-7xl px-5 md:px-8">
+          <ScrollReveal className="mb-12 max-w-2xl">
+            <h2 className={`${display.className} text-4xl font-extrabold tracking-tight md:text-5xl`}>Lo que dicen nuestros clientes</h2>
+          </ScrollReveal>
+          <div className="grid gap-6 md:grid-cols-2">
+            {[
+              { q: 'Excelente atención y servicio de instalación. Totalmente recomendado para quienes buscan reducir sus costos de energía de forma segura y profesional.', n: 'María Elena Soto' },
+              { q: 'Muy buena asesoría desde el primer contacto. El kit solar funciona a la perfección y el equipo técnico resolvió todas nuestras dudas paso a paso.', n: 'Carlos Morales' },
+            ].map(({ q, n }, i) => (
+              <ScrollReveal key={n} as={i ? 'slide-left' : 'slide-right'}>
+                <blockquote className="flex h-full flex-col justify-between rounded-3xl border border-white/10 bg-white/5 p-8">
+                  <div>
+                    <div className="mb-4 flex gap-1 text-amber-400">{[...Array(5)].map((_, k) => <Star key={k} className="h-4 w-4 fill-current" />)}</div>
+                    <p className="text-lg leading-relaxed text-slate-100">&ldquo;{q}&rdquo;</p>
+                  </div>
+                  <footer className="mt-8 flex items-center justify-between border-t border-white/10 pt-4 text-sm">
+                    <span className="font-semibold">{n}</span>
+                    <a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-amber-300 hover:underline">
+                      <Facebook className="h-4 w-4" /> Ver en Facebook
+                    </a>
+                  </footer>
+                </blockquote>
+              </ScrollReveal>
+            ))}
+          </div>
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <span className="text-sm text-slate-400">Más proyectos y opiniones:</span>
+            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold transition hover:bg-white/10"><Instagram className="h-4 w-4" /> Instagram</a>
+            <a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold transition hover:bg-white/10"><Facebook className="h-4 w-4" /> Facebook</a>
+          </div>
+        </div>
+      </section>
+
+      {/* PREGUNTAS FRECUENTES */}
+      <section className="bg-white py-20 md:py-28">
+        <div className="mx-auto grid max-w-6xl gap-12 px-5 md:px-8 lg:grid-cols-12">
+          <ScrollReveal className="lg:col-span-4">
+            <h2 className={`${display.className} text-4xl font-extrabold tracking-tight text-[#0A2A4A]`}>Preguntas frecuentes</h2>
+            <p className="mt-4 text-slate-600">¿Tienes otra duda? Escríbenos y te respondemos.</p>
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600">
+              <MessageCircle className="h-4 w-4" /> Preguntar por WhatsApp
+            </a>
+          </ScrollReveal>
+          <ScrollReveal className="lg:col-span-8">
+            <div className="divide-y divide-slate-200 rounded-3xl ring-1 ring-slate-200">
+              {[
+                ['¿Cuánto cuesta un sistema solar?', 'Depende de tu consumo, el espacio en tu techo y los equipos que elijas. Por eso la evaluación y la cotización son sin costo: te damos un precio cerrado, con todo incluido, antes de que decidas.'],
+                ['¿En cuánto tiempo recupero la inversión?', 'Depende de cuánto pagas hoy de luz y del tamaño del sistema. En la cotización te mostramos el ahorro estimado y el plazo de retorno para tu caso.'],
+                ['¿Hay facilidades de pago?', 'Sí, consúltanos por las alternativas de pago y cuotas disponibles al momento de cotizar.'],
+                ['¿Funciona en días nublados?', 'Sí, pero genera menos que en un día despejado. Dimensionamos el sistema con tu consumo y la radiación de tu zona.'],
+                ['¿Qué pasa con la energía que no consumo?', 'En Chile existe la generación distribuida (Net Billing): los excedentes se inyectan a la red y se descuentan en tu cuenta. Te explicamos cómo aplica a tu caso.'],
+                ['¿Necesito baterías?', 'No es obligatorio en un sistema conectado a la red. Las baterías sirven si quieres respaldo ante cortes de luz.'],
+                ['¿Ustedes hacen los trámites?', 'Sí. Nos encargamos de la declaración ante la SEC y la conexión con la distribuidora eléctrica.'],
+                ['¿Cuánto demora la instalación?', 'Depende del tamaño del proyecto y de los trámites. Te entregamos un plazo concreto junto con la cotización.'],
+                ['¿Qué mantención requiere?', 'Poca: limpieza periódica de los paneles y revisión del monitoreo. Nuestro soporte técnico te acompaña después de la instalación.'],
+              ].map(([q, a]) => (
+                <details key={q} className="group p-6 open:bg-slate-50 first:rounded-t-3xl last:rounded-b-3xl">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-[#0A2A4A] [&::-webkit-details-marker]:hidden">
+                    {q}
+                    <Plus className="h-5 w-5 flex-none text-orange-600 transition-transform duration-300 group-open:rotate-45" />
+                  </summary>
+                  <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600">{a}</p>
+                </details>
+              ))}
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="relative overflow-hidden bg-gradient-to-r from-orange-600 to-amber-500 py-20">
+        <div className="drift pointer-events-none absolute -left-20 -top-20 h-80 w-80 rounded-full bg-white/15" />
+        <ScrollReveal as="scale" className="relative mx-auto max-w-3xl px-5 text-center md:px-8">
+          <h2 className={`${display.className} text-4xl font-extrabold leading-tight text-white md:text-5xl`}>¿Listo para bajar tu cuenta de luz?</h2>
+          <p className="mx-auto mt-4 max-w-xl text-orange-50">Envíanos una foto de tu boleta de luz por WhatsApp y te preparamos una cotización sin costo.</p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <a href={wa('Hola, les envío mi boleta de luz para que me coticen un sistema solar')} target="_blank" rel="noopener noreferrer" className="group inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 font-bold text-orange-600 shadow-lg transition hover:-translate-y-0.5">
+              <FileText className="h-5 w-5" /> Enviar mi boleta
+            </a>
+            <a href={`tel:${PHONE_TEL}`} className="inline-flex items-center gap-2 rounded-xl border-2 border-white px-8 py-4 font-bold text-white transition hover:bg-white/10">
+              <Phone className="h-5 w-5" /> Llamar
+            </a>
+          </div>
         </ScrollReveal>
       </section>
 
-      {/* CONTACT SECTION */}
-      <section id="contacto" className="py-16 md:py-20 bg-slate-50">
-        <div className="max-w-4xl mx-auto px-5 md:px-8">
-          <ScrollReveal as="fade-up" className="bg-white p-6 sm:p-8 md:p-12 rounded-2xl shadow-sm border border-slate-200">
-            <div className="text-center mb-8 md:mb-10">
-              <div className="flex items-center justify-center gap-2.5 mb-3 text-orange-600">
-                <Sun className="w-4 h-4" strokeWidth={2} />
-                <span className="text-sm font-semibold">Ponte en contacto</span>
-              </div>
-              <h2 className="text-3xl font-extrabold text-[#0F172A]">Contáctanos</h2>
-              <p className="text-slate-600 mt-2 text-sm md:text-base">Completa el formulario y un especialista en energía solar te responderá a la brevedad.</p>
+      {/* CONTACTO */}
+      <section id="contacto" className="py-20 md:py-28">
+        <div className="mx-auto grid max-w-6xl gap-8 px-5 md:px-8 lg:grid-cols-3">
+          <ScrollReveal as="fade-up" className="space-y-4 lg:col-span-1">
+            <h2 className={`${display.className} text-4xl font-extrabold text-[#0A2A4A]`}>Contáctanos</h2>
+            <p className="text-slate-600">Un especialista en energía solar te responderá a la brevedad.</p>
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-2xl bg-white p-4 ring-1 ring-slate-200 transition hover:ring-emerald-400">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"><MessageCircle className="h-5 w-5" /></span>
+              <span><span className="block text-xs text-slate-500">WhatsApp</span><span className="font-semibold text-[#0A2A4A]">{PHONE_DISPLAY}</span></span>
+            </a>
+            <a href={`tel:${PHONE_TEL}`} className="flex items-center gap-3 rounded-2xl bg-white p-4 ring-1 ring-slate-200 transition hover:ring-orange-400">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-orange-600"><Phone className="h-5 w-5" /></span>
+              <span><span className="block text-xs text-slate-500">Teléfono</span><span className="font-semibold text-[#0A2A4A]">{PHONE_DISPLAY}</span></span>
+            </a>
+            <div className="flex gap-3 pt-2">
+              <a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-[#0A2A4A] ring-1 ring-slate-200 hover:text-orange-600"><Facebook className="h-5 w-5" /></a>
+              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-[#0A2A4A] ring-1 ring-slate-200 hover:text-orange-600"><Instagram className="h-5 w-5" /></a>
             </div>
-
+          </ScrollReveal>
+          <ScrollReveal as="fade-up" delay={100} className="rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-200 sm:p-10 lg:col-span-2">
             <ContactForm />
           </ScrollReveal>
         </div>
       </section>
 
+
+      {/* Barra fija inferior (móvil) */}
+      <div className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-2 gap-2 border-t border-slate-200 bg-white/95 p-3 backdrop-blur md:hidden">
+        <a href={`tel:${PHONE_TEL}`} className="flex items-center justify-center gap-2 rounded-xl bg-[#0A2A4A] py-3 text-sm font-semibold text-white">
+          <Phone className="h-4 w-4" /> Llamar
+        </a>
+        <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 rounded-xl bg-emerald-500 py-3 text-sm font-semibold text-white">
+          <MessageCircle className="h-4 w-4" /> WhatsApp
+        </a>
+      </div>
     </div>
   )
 }
