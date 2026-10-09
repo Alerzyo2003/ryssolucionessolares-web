@@ -20,6 +20,7 @@ const navLinks = [
   { href: '/', label: 'Inicio' },
   { href: '/acerca', label: 'Acerca de' },
   { href: '/servicios', label: 'Servicios' },
+  { href: '/proyectos', label: 'Proyectos' },
   { href: '/tienda', label: 'Tienda' },
   { href: '/calculadora', label: 'Calculadora' },
   { href: '/contacto', label: 'Contacto' },

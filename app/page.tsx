@@ -65,11 +65,7 @@ const WHATSAPP_URL = wa('Hola, quiero cotizar un sistema solar')
   (foto de tu proyecto, comuna, potencia y ahorro que vio el cliente).
   Si un campo no lo conoces, déjalo vacío ('') y no se mostrará.
 */
-const PROJECTS: { img: string; tipo: string; comuna: string; kwp: string; ahorro: string }[] = [
-  { img: 'https://images.unsplash.com/photo-1508873535684-277a3cbcc4e8?q=80&w=800&auto=format&fit=crop', tipo: 'Vivienda', comuna: 'TODO: comuna', kwp: 'TODO kWp', ahorro: '' },
-  { img: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=800&auto=format&fit=crop', tipo: 'Comercio', comuna: 'TODO: comuna', kwp: 'TODO kWp', ahorro: '' },
-  { img: 'https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=800&auto=format&fit=crop', tipo: 'Industria', comuna: 'TODO: comuna', kwp: 'TODO kWp', ahorro: '' },
-]
+
 
 /* Planes: ajusta potencias y textos a tus kits reales. Precio opcional (deja null para "Cotizar"). */
 const PLANS: { name: string; kwp: string; para: string; price: number | null; popular?: boolean; items: string[]; msg: string }[] = [
@@ -109,6 +105,26 @@ export default async function HomePage() {
     .order('featured', { ascending: false })
     .order('created_at', { ascending: false })
     .limit(8)
+
+  const { data: projectRows } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('published', true)
+    .eq('featured', true)
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: false })
+    .limit(3)
+
+  const PROJECTS = (projectRows || []).map((p) => ({
+    img: p.image_url as string,
+    imgInversor: (p.inverter_image_url || p.image_url) as string,
+    tipo: p.tipo || 'Proyecto',
+    comuna: p.comuna || '',
+    region: p.region || '',
+    kwp: p.kwp || '',
+    extra: p.extra || undefined,
+    desc: p.description || '',
+  }))
 
   return (
     <div className="min-h-screen bg-[#F6F8FB] pb-20 text-slate-800 antialiased md:pb-0">
@@ -394,29 +410,87 @@ export default async function HomePage() {
           <ScrollReveal className="mb-12 flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div className="max-w-2xl">
               <h2 className={`${display.className} text-4xl font-extrabold tracking-tight text-[#0A2A4A] md:text-5xl`}>Proyectos que ya están ahorrando</h2>
-              <p className="mt-4 text-slate-600">Algunas de nuestras instalaciones. Más fotos y videos en nuestras redes.</p>
+              <p className="mt-4 text-slate-600">Instalaciones reales de nuestros clientes, de la Región Metropolitana al Biobío.</p>
             </div>
-            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="group inline-flex items-center gap-2 text-sm font-semibold text-[#0A2A4A] hover:text-orange-600">
-              <Instagram className="h-4 w-4" /> Ver más en Instagram <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </a>
+            <Link href="/proyectos" className="group inline-flex items-center gap-2 text-sm font-semibold text-[#0A2A4A] hover:text-orange-600">
+              Ver todos los proyectos <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
           </ScrollReveal>
+
           <div className="grid gap-6 md:grid-cols-3">
             {PROJECTS.map((p, i) => (
-              <ScrollReveal key={i} as="fade-up" delay={i * 100}>
-                <article className="group overflow-hidden rounded-3xl bg-[#F6F8FB] ring-1 ring-slate-200">
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    <Image src={p.img} alt={`Proyecto solar ${p.tipo} en ${p.comuna}`} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
-                    <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-[11px] font-semibold text-[#0A2A4A]">{p.tipo}</span>
+              <ScrollReveal key={p.img} as="fade-up" delay={i * 100}>
+                <article className="group flex h-full flex-col overflow-hidden rounded-3xl bg-[#F6F8FB] ring-1 ring-slate-200 transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:ring-orange-300">
+                  <div className="relative grid aspect-[4/3] grid-cols-3 gap-1 overflow-hidden bg-white">
+                    {/* Instalación */}
+                    <div className="relative col-span-2 overflow-hidden">
+                      <Image
+                        src={p.img}
+                        alt={`Instalación solar ${p.tipo.toLowerCase()} en ${p.comuna}`}
+                        fill
+                        sizes="(max-width: 768px) 66vw, 22vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#071A30]/75 via-transparent to-transparent" />
+                      <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-[11px] font-semibold text-[#0A2A4A]">{p.tipo}</span>
+                      <div className="absolute bottom-3 left-3 text-white">
+                        <p className="flex items-center gap-1.5 text-sm font-bold"><MapPin className="h-4 w-4 text-amber-300" /> {p.comuna}</p>
+                        <p className="text-xs text-slate-200">{p.region}</p>
+                      </div>
+                    </div>
+
+                    {/* Inversor */}
+                    <div className="relative overflow-hidden">
+                      <Image
+                        src={p.imgInversor}
+                        alt={`Inversor instalado en ${p.comuna}`}
+                        fill
+                        sizes="(max-width: 768px) 33vw, 11vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <span className="absolute inset-x-0 bottom-0 bg-[#0A2A4A]/85 py-1.5 text-center text-[10px] font-bold uppercase tracking-wide text-white">
+                        Inversor
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2 p-5 text-sm text-slate-600">
-                    {p.comuna && <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-orange-600" /> {p.comuna}</span>}
-                    {p.kwp && <span className="flex items-center gap-1.5"><Zap className="h-4 w-4 text-orange-600" /> {p.kwp}</span>}
-                    {p.ahorro && <span className="flex items-center gap-1.5 font-semibold text-emerald-600"><TrendingDown className="h-4 w-4" /> {p.ahorro}</span>}
+
+                  <div className="flex flex-1 flex-col p-5">
+                    <div className="flex flex-wrap gap-2">
+                      {p.kwp && (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-50 px-3 py-1 text-xs font-bold text-orange-700">
+                          <Zap className="h-3.5 w-3.5" /> {p.kwp}
+                        </span>
+                      )}
+                      {p.extra && (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                          <ShieldCheck className="h-3.5 w-3.5" /> {p.extra}
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-3 text-sm leading-relaxed text-slate-600">{p.desc}</p>
                   </div>
                 </article>
               </ScrollReveal>
             ))}
           </div>
+
+          {/* Condiciones de pago (antes se repetían en cada publicación) */}
+          <ScrollReveal className="mt-8">
+            <div className="grid gap-3 rounded-3xl bg-[#0A2A4A] p-6 text-white sm:grid-cols-3 md:p-8">
+              <div className="flex items-start gap-3">
+                <Check className="mt-0.5 h-5 w-5 flex-none text-amber-400" />
+                <p className="text-sm"><span className="block font-bold">Pagas al terminar</span><span className="text-slate-300">Una vez instalado y revisado tu equipo.</span></p>
+              </div>
+              <div className="flex items-start gap-3">
+                <Check className="mt-0.5 h-5 w-5 flex-none text-amber-400" />
+                <p className="text-sm"><span className="block font-bold">Sin abonos</span><span className="text-slate-300">No pedimos pagos por adelantado.</span></p>
+              </div>
+              <div className="flex items-start gap-3">
+                <Check className="mt-0.5 h-5 w-5 flex-none text-amber-400" />
+                <p className="text-sm"><span className="block font-bold">Financiamiento disponible</span><span className="text-slate-300">Contado, transferencia o tarjeta de crédito.</span></p>
+              </div>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 

@@ -174,14 +174,19 @@ export default function AdminDashboardPage() {
             <RefreshCw size={16} /> Actualizar
           </button>
           <Link
+            href="/admin/proyectos"
+            className="inline-flex h-10 items-center gap-2 rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold hover:bg-slate-50"
+          >
+            Proyectos
+          </Link>
+          <Link
             href="/admin/new-product"
             className="inline-flex h-10 items-center gap-2 rounded-md bg-slate-900 px-4 text-sm font-bold text-white hover:bg-slate-700"
           >
             <PackagePlus size={16} /> Crear producto
           </Link>
         </div>
-      </div>
-
+ </div>
       <section className="mb-8 grid gap-4 sm:grid-cols-3" aria-label="Resumen">
         <div className="border-l-4 border-orange-500 bg-white p-5 shadow-sm">
           <p className="text-sm font-medium text-slate-500">Productos</p>
