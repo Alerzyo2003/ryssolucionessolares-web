@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@theme {
+  /* Aquí definimos nuestra paleta profesional (sin amarillos) */
+  --color-corp-blue: #0F172A;
+  --color-corp-accent: #2563EB;
+  --color-corp-light: #F8FAFC;
+  --color-corp-gray: #64748B;
+}
+/* Añade esto en tu archivo src/app/globals.css */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
