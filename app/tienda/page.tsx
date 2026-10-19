@@ -19,7 +19,7 @@ const display = Bricolage_Grotesque({ subsets: ['latin'], weight: ['700', '800']
 const SITE_NAME = 'R&S Soluciones Solares'
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tutienda.cl'
 
-const WHATSAPP_NUMBER = '56991363439'
+const WHATSAPP_NUMBER = '56988317681'
 const wa = (msg: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`
 
 const TRUST = [
