@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description: 'Instalaciones solares reales en hogares, comercios y parcelas de Chile: sistemas on-grid, híbridos y con baterías.',
 }
 
-const WHATSAPP_URL = `https://wa.me/56991363439?text=${encodeURIComponent('Hola, vi sus proyectos en la web y quiero cotizar un sistema solar')}`
+const WHATSAPP_URL = `https://wa.me/56988317681?text=${encodeURIComponent('Hola, vi sus proyectos en la web y quiero cotizar un sistema solar')}`
 
 type Project = {
   id: string
