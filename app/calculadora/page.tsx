@@ -517,7 +517,7 @@ export default function CalculadoraPage() {
             )}
 
             <a
-              href="https://wa.me/56991363439?text=Hola%2C%20quiero%20una%20cotizaci%C3%B3n%20para%20un%20sistema%20solar."
+              href="https://wa.me/56988317681?text=Hola%2C%20quiero%20una%20cotizaci%C3%B3n%20para%20un%20sistema%20solar."
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-between bg-orange-50 hover:bg-orange-100 border border-orange-100 rounded-2xl px-5 py-4 transition-colors mb-5">
