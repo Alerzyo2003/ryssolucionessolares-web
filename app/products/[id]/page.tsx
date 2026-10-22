@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Bricolage_Grotesque } from 'next/font/google'
 import { FaWhatsapp } from 'react-icons/fa'
 import { supabase } from '@/lib/supabase'
+import { SITE } from '@/lib/site'
 import ProductGallery from '@/components/ProductGallery'
 import ProductPurchase from '@/components/ProductPurchase'
 import { ChevronRight, Truck, ShieldCheck, Headphones, FileText, CreditCard, ImageOff, Sun, ArrowRight } from 'lucide-react'
@@ -13,9 +14,9 @@ import TrackViewContent from '@/components/TrackViewContent'
 
 const display = Bricolage_Grotesque({ subsets: ['latin'], weight: ['700', '800'] })
 
-// Ajusta estos valores (o defínelos en .env)
-const SITE_NAME = 'R&S Soluciones Solares'
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ryssolucionessolares.cl'
+// Nombre y dominio salen de lib/site.ts
+const SITE_NAME = SITE.nombre
+const SITE_URL = SITE.url
 // Número con código de país y sin "+"
 const WHATSAPP_NUMBER = '56988317681'
 
@@ -79,10 +80,13 @@ function StockBadge({ stock }: { stock: number }) {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params
   const product = await getProduct(id)
-  if (!product) return { title: `Producto no encontrado | ${SITE_NAME}` }
+  if (!product) return { title: 'Producto no encontrado', robots: { index: false } }
 
   const clean = (product.description || '').replace(/\s+/g, ' ').trim().slice(0, 155)
-  const title = `${product.name} | ${SITE_NAME}`
+  // La plantilla del layout raíz agrega " | R&S Soluciones Solares" al final.
+  const title = product.brand && !product.name.toLowerCase().includes(product.brand.toLowerCase())
+    ? `${product.name} ${product.brand}`
+    : product.name
   const description = clean || `Compra ${product.name} en ${SITE_NAME}. Envío a todo Chile, factura y asesoría técnica.`
 
   return {
@@ -90,9 +94,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description,
     alternates: { canonical: `${SITE_URL}/products/${product.id}` },
     openGraph: {
-      title,
+      title: `${title} | ${SITE_NAME}`,
       description,
       type: 'website',
+      locale: 'es_CL',
+      url: `${SITE_URL}/products/${product.id}`,
       siteName: SITE_NAME,
       images: product.image_url ? [{ url: product.image_url, alt: product.name }] : undefined,
     },

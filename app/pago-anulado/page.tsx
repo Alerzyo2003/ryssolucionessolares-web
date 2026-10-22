@@ -1,4 +1,8 @@
 import Link from 'next/link'
+import { NO_INDEXAR } from '@/lib/seo'
+
+// Página privada: no debe aparecer en Google.
+export const metadata = NO_INDEXAR
 
 export default function PagoAnuladoPage() {
   return (

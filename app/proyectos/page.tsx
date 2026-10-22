@@ -1,18 +1,20 @@
-import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Bricolage_Grotesque } from 'next/font/google'
 import { MapPin, Zap, ShieldCheck, MessageCircle, Check } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { metaPagina } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
 
 const display = Bricolage_Grotesque({ subsets: ['latin'], weight: ['700', '800'] })
 
-export const metadata: Metadata = {
-  title: 'Proyectos realizados | R&S Soluciones Solares',
-  description: 'Instalaciones solares reales en hogares, comercios y parcelas de Chile: sistemas on-grid, híbridos y con baterías.',
-}
+export const metadata = metaPagina({
+  titulo: 'Proyectos de paneles solares realizados',
+  descripcion:
+    'Instalaciones solares reales en hogares, comercios y parcelas de Chile: sistemas on-grid, híbridos y con baterías.',
+  ruta: '/proyectos',
+})
 
 const WHATSAPP_URL = `https://wa.me/56988317681?text=${encodeURIComponent('Hola, vi sus proyectos en la web y quiero cotizar un sistema solar')}`
 

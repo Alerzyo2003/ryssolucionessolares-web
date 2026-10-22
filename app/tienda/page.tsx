@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { supabase } from '@/lib/supabase'
+import { SITE } from '@/lib/site'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Bricolage_Grotesque } from 'next/font/google'
@@ -15,9 +16,9 @@ import {
 
 const display = Bricolage_Grotesque({ subsets: ['latin'], weight: ['700', '800'] })
 
-// Ajusta estos valores (o defínelos en .env)
-const SITE_NAME = 'R&S Soluciones Solares'
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.tutienda.cl'
+// Nombre y dominio salen de lib/site.ts (antes el dominio de respaldo era uno de plantilla)
+const SITE_NAME = SITE.nombre
+const SITE_URL = SITE.url
 
 const WHATSAPP_NUMBER = '56988317681'
 const wa = (msg: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`
@@ -91,7 +92,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const q = str(p.q)
   const label = [cat && cap(cat), brand && cap(brand)].filter(Boolean).join(' ')
 
-  const title = label ? `${label} – Equipos solares | ${SITE_NAME}` : `Catálogo de equipos solares | ${SITE_NAME}`
+  const title = label ? `${label} – Equipos solares` : `Tienda de paneles solares, inversores y baterías`
   const description = label
     ? `Compra ${label.toLowerCase()} en ${SITE_NAME}. Equipos solares con garantía, factura y envío a todo Chile.`
     : `Paneles solares, inversores, baterías y más. Equipos con garantía, factura y envío a todo Chile.`
@@ -107,7 +108,15 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     description,
     alternates: { canonical: `${SITE_URL}/tienda${qs ? `?${qs}` : ''}` },
     robots: noindex ? { index: false, follow: true } : { index: true, follow: true },
-    openGraph: { title, description, type: 'website', siteName: SITE_NAME },
+    openGraph: {
+      title: `${title} | ${SITE_NAME}`,
+      description,
+      type: 'website',
+      locale: 'es_CL',
+      siteName: SITE_NAME,
+      url: `${SITE_URL}/tienda${qs ? `?${qs}` : ''}`,
+      images: [{ url: SITE.imagen }],
+    },
   }
 }
 
