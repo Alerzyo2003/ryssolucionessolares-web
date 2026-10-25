@@ -319,6 +319,14 @@ export default function CartPage() {
                 </p>
               </div>
 
+              <p className="mt-3 text-center text-xs text-slate-500">
+                Al pagar aceptas nuestra{' '}
+                <Link href="/politica-de-devoluciones" className="font-semibold text-orange-600 hover:underline">
+                  política de devoluciones y garantías
+                </Link>
+                . Tienes 10 días de retracto en productos sin instalar.
+              </p>
+
             </motion.aside>
 
           </div>

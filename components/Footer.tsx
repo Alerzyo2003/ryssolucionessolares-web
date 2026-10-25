@@ -72,6 +72,8 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto flex justify-center items-center text-[10px] md:text-xs font-medium">
           <div className="text-center">
             Copyright 2026 © <span className="text-white font-semibold">R&S Soluciones Solares</span>. Todos los derechos reservados.
+            <span className="mx-2 text-slate-600">·</span>
+            <a href="/politica-de-devoluciones" className="underline-offset-4 hover:text-white hover:underline">Política de devoluciones y garantías</a>
           </div>
         </div>
       </div>

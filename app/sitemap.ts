@@ -11,6 +11,7 @@ const PAGINAS: { ruta: string; prioridad: number; frecuencia: 'weekly' | 'monthl
   { ruta: '/tienda', prioridad: 0.9, frecuencia: 'weekly' },
   { ruta: '/calculadora', prioridad: 0.8, frecuencia: 'monthly' },
   { ruta: '/proyectos', prioridad: 0.8, frecuencia: 'weekly' },
+  { ruta: '/politica-de-devoluciones', prioridad: 0.3, frecuencia: 'monthly' },
   { ruta: '/acerca', prioridad: 0.6, frecuencia: 'monthly' },
   { ruta: '/contacto', prioridad: 0.7, frecuencia: 'monthly' },
 ]
