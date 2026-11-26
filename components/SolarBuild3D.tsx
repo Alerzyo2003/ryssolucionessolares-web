@@ -304,7 +304,7 @@ export default function SolarBuild3D() {
     : 'Instalando rieles'
 
   return (
-    <div aria-hidden className="pointer-events-none fixed bottom-[84px] left-2 z-[55] md:bottom-6 md:left-6">
+    <div aria-hidden className="pointer-events-none fixed bottom-6 left-6 z-[55] hidden md:block">
       <div className="overflow-hidden rounded-xl border border-white/60 bg-gradient-to-b from-sky-100/90 to-white/90 shadow-lg shadow-slate-900/15 backdrop-blur-md md:rounded-2xl md:shadow-xl">
         <div className="h-[80px] w-[110px] md:h-[200px] md:w-[270px]">
           <Canvas
