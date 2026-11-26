@@ -51,9 +51,9 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full overflow-x-clip antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-corp-light">
+      <body className="min-h-full flex flex-col overflow-x-clip bg-corp-light">
         {/* Datos estructurados: le dicen a Google qué es el negocio, dónde está y cómo contactarlo */}
         <script
           type="application/ld+json"

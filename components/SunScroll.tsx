@@ -1,9 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import dynamic from 'next/dynamic'
-
-const SolarBuild3D = dynamic(() => import('./SolarBuild3D'), { ssr: false })
 
 /* ---------- utilidades ---------- */
 
@@ -71,5 +68,5 @@ export function NightSky() {
 /* ---------- panel 3D que se arma con el scroll ---------- */
 
 export function DayClock() {
-  return <SolarBuild3D />
+  return null
 }

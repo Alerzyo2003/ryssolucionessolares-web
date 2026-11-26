@@ -9,7 +9,7 @@ import ScrollReveal from '@/components/ScrollReveal'
 import AnimatedCounter from '@/components/AnimatedCounter'
 import SavingsCalculator from '@/components/SavingsCalculator'
 import EnergyFlow from '@/components/EnergyFlow'
-import { SunProgress, HeroSun, NightSky, DayClock } from '@/components/SunScroll'
+import { SunProgress, HeroSun, NightSky } from '@/components/SunScroll'
 import {
   ArrowRight, MessageCircle, ClipboardCheck, Wrench, Gauge,
   Globe2, Star, Tag, Lock, Award, BadgeCheck, Zap, ShieldCheck,
@@ -127,7 +127,7 @@ export default async function HomePage() {
   }))
 
   return (
-    <div className="min-h-screen bg-[#F6F8FB] pb-20 text-slate-800 antialiased md:pb-0">
+    <div className="min-h-screen overflow-x-clip bg-[#F6F8FB] text-slate-800 antialiased">
       <style>{`
         @keyframes rise { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: none } }
         @keyframes sunrise { from { transform: translateY(40px) scale(.9); opacity: 0 } to { transform: none; opacity: 1 } }
@@ -150,7 +150,6 @@ export default async function HomePage() {
 
       <SunProgress />
       <NightSky />
-      <DayClock />
 
       {/* FRANJA SUPERIOR: oferta + contacto directo */}
       <div className="bg-orange-600 text-white">
@@ -714,15 +713,6 @@ export default async function HomePage() {
       </section>
 
 
-      {/* Barra fija inferior (móvil) */}
-      <div className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-2 gap-2 border-t border-slate-200 bg-white/95 p-3 backdrop-blur md:hidden">
-        <a href={`tel:${PHONE_TEL}`} className="flex items-center justify-center gap-2 rounded-xl bg-[#0A2A4A] py-3 text-sm font-semibold text-white">
-          <Phone className="h-4 w-4" /> Llamar
-        </a>
-        <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 rounded-xl bg-emerald-500 py-3 text-sm font-semibold text-white">
-          <MessageCircle className="h-4 w-4" /> WhatsApp
-        </a>
-      </div>
     </div>
   )
 }
