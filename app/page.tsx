@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Bricolage_Grotesque } from 'next/font/google'
+import { display } from '@/lib/fonts/display'
 import AddToCartButton from '@/components/AddToCartButton'
 import ContactForm from '@/components/ContactForm'
 import BrandCarousel from '@/components/BrandCarousel'
@@ -35,8 +35,6 @@ function Instagram({ className = '' }: { className?: string }) {
     </svg>
   )
 }
-
-const display = Bricolage_Grotesque({ subsets: ['latin'], weight: ['500', '700', '800'] })
 
 interface Product {
   id: string

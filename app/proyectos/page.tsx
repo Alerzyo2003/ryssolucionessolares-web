@@ -1,13 +1,11 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { Bricolage_Grotesque } from 'next/font/google'
+import { display } from '@/lib/fonts/display'
 import { MapPin, Zap, ShieldCheck, MessageCircle, Check } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { metaPagina } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
-
-const display = Bricolage_Grotesque({ subsets: ['latin'], weight: ['700', '800'] })
 
 export const metadata = metaPagina({
   titulo: 'Proyectos de paneles solares realizados',

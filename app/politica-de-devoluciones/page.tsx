@@ -1,9 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Bricolage_Grotesque } from 'next/font/google'
+import { display } from '@/lib/fonts/display'
 import { ChevronRight, MessageCircle, RotateCcw, ShieldCheck, Wrench, Truck, ClipboardList, AlertTriangle } from 'lucide-react'
-
-const display = Bricolage_Grotesque({ subsets: ['latin'], weight: ['700', '800'] })
 
 export const metadata: Metadata = {
   title: 'Política de devoluciones y garantías | R&S Soluciones Solares',
