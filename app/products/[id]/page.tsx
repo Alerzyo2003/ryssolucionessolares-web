@@ -3,7 +3,7 @@ import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Bricolage_Grotesque } from 'next/font/google'
+import { display } from '@/lib/fonts/display'
 import { FaWhatsapp } from 'react-icons/fa'
 import { supabase } from '@/lib/supabase'
 import { SITE } from '@/lib/site'
@@ -12,7 +12,6 @@ import ProductPurchase from '@/components/ProductPurchase'
 import { ChevronRight, Truck, ShieldCheck, Headphones, FileText, CreditCard, ImageOff, Sun, ArrowRight } from 'lucide-react'
 import TrackViewContent from '@/components/TrackViewContent'
 
-const display = Bricolage_Grotesque({ subsets: ['latin'], weight: ['700', '800'] })
 
 // Nombre y dominio salen de lib/site.ts
 const SITE_NAME = SITE.nombre

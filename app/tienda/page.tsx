@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { SITE } from '@/lib/site'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Bricolage_Grotesque } from 'next/font/google'
+import { display } from '@/lib/fonts/display'
 import AddToCartButton from '@/components/AddToCartButton'
 import ScrollReveal from '@/components/ScrollReveal'
 import StoreFilterSidebar from '@/components/StoreFilterSidebar'
@@ -13,8 +13,6 @@ import {
   ChevronLeft, ChevronRight, ImageOff, Search, ArrowRight, Sun,
   Truck, ShieldCheck, FileText, Lock, Wrench, MessageCircle, Flame,
 } from 'lucide-react'
-
-const display = Bricolage_Grotesque({ subsets: ['latin'], weight: ['700', '800'] })
 
 // Nombre y dominio salen de lib/site.ts (antes el dominio de respaldo era uno de plantilla)
 const SITE_NAME = SITE.nombre
