@@ -1,5 +1,6 @@
 import 'server-only'
-import { Resend } from 'resend'
+import { adminEmail as getAdminEmail, button, emailLayout, escapeHtml, formatCLP, mailerConfigured, sendMail } from '@/lib/mailer'
+import { SITE } from '@/lib/site'
 import { createSupabaseAdmin } from '@/lib/supabaseAdmin'
 
 type OrderItem = {
@@ -28,12 +29,10 @@ const formatPrice = (value: number, currency: string) =>
   }).format(value)
 
 export async function sendPaidOrderEmails(orderId: string) {
-  const apiKey = process.env.RESEND_API_KEY
-  const from = process.env.RESEND_FROM_EMAIL
-  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || 'contacto@ryssolucionessolares.cl'
+  const adminEmail = getAdminEmail()
 
-  if (!apiKey || !from) {
-    console.error('No se envió el aviso de compra: configura RESEND_API_KEY y RESEND_FROM_EMAIL.')
+  if (!mailerConfigured()) {
+    console.error('No se envió el aviso de compra: configura SMTP_HOST, SMTP_USER y SMTP_PASS.')
     return
   }
 
@@ -78,32 +77,34 @@ export async function sendPaidOrderEmails(orderId: string) {
     `Total: ${formatPrice(amount, currency)}`,
   ].join('\n')
 
-  const resend = new Resend(apiKey)
+  const rows = (order.items ?? []).map((item) =>
+    `<tr><td style="padding:6px 0">${item.quantity} × ${escapeHtml(item.name)}</td><td align="right" style="padding:6px 0;white-space:nowrap">${formatCLP(item.unit_price * item.quantity, currency)}</td></tr>`
+  ).join('')
+  const table = `<table role="presentation" width="100%" style="border-collapse:collapse;font-size:14px;margin:16px 0">${rows}
+<tr><td style="padding:10px 0;border-top:1px solid #e2e8f0;font-weight:bold">Total</td><td align="right" style="padding:10px 0;border-top:1px solid #e2e8f0;font-weight:bold;color:#0B3A63">${formatCLP(amount, currency)}</td></tr></table>
+<p style="font-size:13px;color:#64748b">Orden: ${escapeHtml(order.id)}<br>Comprobante: ${escapeHtml(String(reference))}<br>Medio de pago: ${providerName}</p>`
+  const whatsapp = `https://wa.me/${SITE.whatsapp}`
+
   try {
-    const results = await Promise.all([
-      resend.emails.send({
-        from,
+    await Promise.all([
+      sendMail({
         to: order.customer_email,
+        replyTo: adminEmail,
         subject: 'Compra confirmada - R&S Soluciones Solares',
-        text: `Hola, tu pago fue aprobado. Gracias por comprar en R&S Soluciones Solares.\n\n${details}`,
+        text: `Hola, tu pago fue aprobado. Gracias por comprar en R&S Soluciones Solares.\n\n${details}\n\nDudas: ${SITE.telefonoVisible}`,
+        html: emailLayout(`<h1 style="font-size:22px;color:#0B3A63;margin:0 0 8px">¡Gracias por tu compra!</h1>
+<p>Tu pago fue <strong style="color:#16a34a">aprobado</strong>. Pronto te contactaremos para coordinar la entrega o instalación.</p>${table}
+<p>${button(whatsapp, 'Escríbenos por WhatsApp', '#16a34a')}</p>`),
       }),
-      resend.emails.send({
-        from,
+      sendMail({
         to: adminEmail,
+        replyTo: order.customer_email,
         subject: `Nueva compra pagada - ${reference}`,
         text: `Se aprobó una compra en R&S Soluciones Solares.\n\n${details}`,
+        html: emailLayout(`<h1 style="font-size:22px;color:#0B3A63;margin:0 0 8px">Nueva compra pagada 🎉</h1>
+<p>Cliente: <strong>${escapeHtml(order.customer_email)}</strong></p>${table}`),
       }),
     ])
-    const failedEmail = results.find((result) => result.error)
-
-    if (failedEmail?.error) {
-      await supabase
-        .from('orders')
-        .update({ notification_email_claimed_at: null })
-        .eq('id', order.id)
-      console.error('Resend no pudo enviar los avisos de compra:', failedEmail.error)
-      return
-    }
 
     const { error: sentError } = await supabase
       .from('orders')
